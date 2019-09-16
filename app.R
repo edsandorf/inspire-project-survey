@@ -277,6 +277,7 @@ server <- function(input, output, session) {
             for (i in seq_len(current$alt)) {
               radio_choice[i, ] <- sprintf('<input type = "radio", name = "%s", value = "%s"/>',
                                            response_id,
+                                           # 'choice',
                                            responses()[i])
             }
 
@@ -284,7 +285,7 @@ server <- function(input, output, session) {
             task_matrix <- cbind(task_matrix, radio_choice)
             colnames(task_matrix) <- c(names_attributes, "I choose")
             rownames(task_matrix) <- paste0("Wine ", seq_len(current$alt))
-
+            
             # Return the matrix
             t(task_matrix)
 
@@ -295,30 +296,19 @@ server <- function(input, output, session) {
             'function() { 
               Shiny.unbindAll(this.api().table().node()); }'),
             drawCallback = DT::JS(
-                'function() { ',
-                paste0('var $radio_row = $(\'tr:has(input[name=', response_id, '])\'); '),
-                'var $row = this.api().table().rows($radio_row); ',
-                'var $this = $($row.nodes(0)); ',
-                paste0('this.attr("id", ', response_id, '); '),
-                '$this.addClass(\"shiny-input-radiogroup\"); ',
-                'Shiny.bindAll(this.api().table().node()); ',
-                '}'
-            )
+              paste0("function() {",
+                     paste0("var $radio_row = $(\"tr:has(input[name =", paste0("\'", response_id, "\'") ," ])\");"), 
+                     "var $row = this.api().table().rows($radio_row);
+                      var $this = $($row.nodes(0));",
+                     paste0("$this.attr('id', ", paste0("\'", response_id, "\'"),");"),
+                     "$this.addClass('shiny-input-radiogroup');
+                      Shiny.bindAll(this.api().table().node());}"
+            ))
           )
         )
       }
     })
   })
-  
-
-#   'function() {
-#                            var $radio_row = $(\'tr:has(input[name="choice"])\');
-#                            var $row = this.api().table().rows($radio_row);
-#                            var $this = $($row.nodes(0));
-#                            $this.attr("id", "choice");
-#                            $this.addClass("shiny-input-radiogroup");
-#                            Shiny.bindAll(this.api().table().node());
-#                          }'
   
   #-----------------------------------------------------------------------------
   # When the page counter increases, store the current responses to the 
