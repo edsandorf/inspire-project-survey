@@ -70,6 +70,9 @@ server <- function(input, output, session) {
     question = 0
   )
   
+  timer <- reactiveVal(1000)
+  active <- reactiveVal(TRUE)
+  
   #-----------------------------------------------------------------------------
   # Define what happens when the session begins
   #-----------------------------------------------------------------------------
@@ -414,7 +417,7 @@ server <- function(input, output, session) {
   # questions and meta-data gathered so far
   #-----------------------------------------------------------------------------
   observeEvent(current$page, {
-    
+    # Grab the question inputs AND the conditional inputs
   })
   
   #-----------------------------------------------------------------------------
@@ -441,9 +444,10 @@ server <- function(input, output, session) {
         )
       )
       
+      # Show the next_alt button if we are in a sequential treatment
       if (sequential) {
         shinyjs::showElement("next_alt")
-      } 
+      }
     }
     
     if (page_type == "first_page") {
@@ -454,10 +458,10 @@ server <- function(input, output, session) {
           )
         )
       )
-    }
+    } # End first page
     
     if (page_type == "question") {
-      # Check the answer
+      # Observer to apply JS and check the output
       observe({
         if (question_type == "likert") {
           # Check whether (all) questions are answered
@@ -467,7 +471,7 @@ server <- function(input, output, session) {
           output[["check"]] <- renderPrint({
             str(input[[response_id]])
           })
-        }
+        } # End Likert scale question
         
         if (question_type == "battery") {
           # Check whether (all) questions are answered
@@ -480,14 +484,11 @@ server <- function(input, output, session) {
           output[["check"]] <- renderPrint(
             str(sapply(battery_questions(), function (i) input[[i]]))
           )
-        }
+        } # End battery question
         
-        if (question_type == "choice_task") {
-          output[["check"]] <- renderPrint({
-            str(input[[response_id]])
-          })
-          
-          # Set the current_best and consideration_set treatments
+        if (question_type == "choice_task") { 
+
+          # Set the current_best and consideration_set observers
           if (current_best || consideration_set) {
             checkbox_names <- paste("considered", task_index, seq_len(current$alt), sep = "_")
             checked <- vapply(checkbox_names, function (x) {
@@ -515,15 +516,37 @@ server <- function(input, output, session) {
             # Add minimum 1 for both to the final condition for whether they have answered the choice task
             # Use a message to inform them under the choice task.
             
-            # Check the output
             output[["considered"]] <- renderPrint({
               str(sapply(checkbox_names, function (i) input[[i]]))
             })
-          }
-        }
+            
+          } # End of if (current_best || consideration_set)
+          
+          # Check the output
+          output[["check"]] <- renderPrint({
+            str(input[[response_id]])
+          })
+        } # End choice_task
         
+      }) # End JS and output observer
+      
+      # Observer to run the timer
+      observe({
+        if (search_cost) {
+          invalidateLater(time_inc, session)
+          isolate({
+            if (active()) {
+              timer(timer() - time_inc)
+              if (timer() < time_inc) {
+                active(FALSE)
+              }
+            }
+          })
+        }
       })
       
+      # Output observer to avoid issues with the timer!
+
       # Render the question
       return(
         shiny::withTags(
