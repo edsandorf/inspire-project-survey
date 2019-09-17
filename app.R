@@ -92,7 +92,7 @@ server <- function(input, output, session) {
   
   if (treatment == 1) {
     nalts <- 3L
-    sequential <- FALSE
+    sequential <- TRUE
     current_best <- TRUE
     consideration_set <- FALSE
   }
@@ -403,8 +403,30 @@ server <- function(input, output, session) {
             str(input[[response_id]])
           })
           
+          # Set the current_best and consideration_set treatments
           if (current_best || consideration_set) {
             checkbox_names <- paste("considered", task_index, seq_len(current$alt), sep = "_")
+            checked <- vapply(checkbox_names, function (x) {
+              isTRUE(input[[x]])
+            }, logical(1))
+            toggle_input_condition <- sum(checked)
+            
+            # Current best condition
+            if (current_best) {
+              if (toggle_input_condition >= 1) {
+                for (i in seq_len(current$alt)) {
+                  if (isFALSE(checked[i])){
+                    shinyjs::disable(checkbox_names[i])  
+                  }
+                }
+              } else {
+                for (i in seq_len(current$alt)) {
+                  shinyjs::enable(checkbox_names[i])  
+                }
+              }
+            }
+            
+            # Check the output
             output[["considered"]] <- renderPrint({
               str(sapply(checkbox_names, function (i) input[[i]]))
             })
