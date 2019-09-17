@@ -88,13 +88,97 @@ server <- function(input, output, session) {
   # Define treatments and randomly allocate respondents
   #-----------------------------------------------------------------------------
   # treatment <- sample(seq_len(10), 1)
-  treatment <- 1
+  treatment <- 9
   
+  # Standard choice task with 3 alternatives
   if (treatment == 1) {
+    nalts <- 3L
+    sequential <- FALSE
+    current_best <- FALSE
+    consideration_set <- FALSE
+    search_cost <- FALSE
+  }
+  
+  # Standard choice task with 6 alternatives
+  if (treatment == 2) {
     nalts <- 6L
     sequential <- FALSE
     current_best <- FALSE
+    consideration_set <- FALSE
+    search_cost <- FALSE
+  }
+  
+  # Standard choice tasks with 9 alternatives
+  if (treatment == 3) {
+    nalts <- 9L
+    sequential <- FALSE
+    current_best <- FALSE
+    consideration_set <- FALSE
+    search_cost <- FALSE
+  }
+  
+  # Sequential choice tasks
+  if (treatment == 4) {
+    nalts <- 9L
+    sequential <- TRUE
+    current_best <- FALSE
+    consideration_set <- FALSE
+    search_cost <- FALSE
+  }
+  
+  # Sequential choice tasks with the current best selected
+  if (treatment == 5) {
+    nalts <- 9L
+    sequential <- TRUE
+    current_best <- TRUE
+    consideration_set <- FALSE
+    search_cost <- FALSE
+  }
+  
+  # Sequential choice task with the current consideration set
+  if (treatment == 6) {
+    nalts <- 9L
+    sequential <- TRUE
+    current_best <- FALSE
     consideration_set <- TRUE
+    search_cost <- FALSE
+  }
+  
+  # Sequential choice task with fixed time cost across alts and tasks
+  if (treatment == 7) {
+    nalts <- 9L
+    sequential <- TRUE
+    current_best <- FALSE
+    consideration_set <- FALSE
+    search_cost <- TRUE
+    time_delay <- rep(sample(seq(0, 3000, 250), 1), times = (tasks * nalts))
+  }
+  
+  # Sequential choice tasks with fixed cost across alts, but variable across tasks
+  if (treatment == 8) {
+    nalts <- 9L
+    sequential <- TRUE
+    current_best <- FALSE
+    consideration_set <- FALSE
+    search_cost <- TRUE
+    time_delay <- rep(sample(seq(0, 3000, 250), tasks, replace = TRUE), each = nalts)
+  }
+  
+  # Sequential choice tasks with variable time cost across alts and tasks
+  if (treatment == 9) {
+    nalts <- 9L
+    sequential <- TRUE
+    current_best <- FALSE
+    consideration_set <- FALSE
+    search_cost <- TRUE
+    time_delay <- sample(seq(0, 3000, 250), tasks * nalts, replace = TRUE)
+  }
+  
+  if (treatment %in% c(7, 8, 9)) {
+    names(time_delay) <- paste0("time_delay_task_",
+                                rep(seq_len(tasks), each = nalts),
+                                "_alt_",
+                                rep(seq_len(nalts), times = tasks))
   }
   
   #-----------------------------------------------------------------------------
