@@ -91,10 +91,10 @@ server <- function(input, output, session) {
   treatment <- 1
   
   if (treatment == 1) {
-    nalts <- 3L
-    sequential <- TRUE
-    current_best <- TRUE
-    consideration_set <- FALSE
+    nalts <- 6L
+    sequential <- FALSE
+    current_best <- FALSE
+    consideration_set <- TRUE
   }
   
   #-----------------------------------------------------------------------------
@@ -409,22 +409,27 @@ server <- function(input, output, session) {
             checked <- vapply(checkbox_names, function (x) {
               isTRUE(input[[x]])
             }, logical(1))
-            toggle_input_condition <- sum(checked)
+            sum_checked <- sum(checked)
             
             # Current best condition
-            if (current_best) {
-              if (toggle_input_condition >= 1) {
-                for (i in seq_len(current$alt)) {
-                  if (isFALSE(checked[i])){
-                    shinyjs::disable(checkbox_names[i])  
-                  }
-                }
-              } else {
-                for (i in seq_len(current$alt)) {
-                  shinyjs::enable(checkbox_names[i])  
+            if (current_best) toggle_input_condition <- 1
+            if (consideration_set) toggle_input_condition <- 3
+            
+            if (sum_checked >= toggle_input_condition) {
+              for (i in seq_len(current$alt)) {
+                if (isFALSE(checked[i])){
+                  shinyjs::disable(checkbox_names[i])  
                 }
               }
+            } else {
+              for (i in seq_len(current$alt)) {
+                shinyjs::enable(checkbox_names[i])  
+              }
             }
+            # Consideration set
+            
+            # Add minimum 1 for both to the final condition for whether they have answered the choice task
+            # Use a message to inform them under the choice task.
             
             # Check the output
             output[["considered"]] <- renderPrint({
