@@ -93,6 +93,8 @@ server <- function(input, output, session) {
   if (treatment == 1) {
     nalts <- 3L
     sequential <- FALSE
+    current_best <- TRUE
+    consideration_set <- FALSE
   }
   
   #-----------------------------------------------------------------------------
@@ -111,6 +113,7 @@ server <- function(input, output, session) {
     select(-ct_order, -alt_order)
   
   names_attributes <- tools::toTitleCase(names(choice_tasks))
+  colnames(choice_tasks) <- names_attributes
   
   # Get the data ready to submit to the database
   data_attributes <- as.vector(t(choice_tasks))
@@ -269,21 +272,33 @@ server <- function(input, output, session) {
             the_rows <- ((1 + (task_index - 1) * nalts):(task_index * nalts))[seq_len(current$alt)]
 
             # Subset the choice_tasks to only the current choice task
-            
             task_matrix <- choice_tasks %>%
               slice(the_rows)
-
+            
+            # Add checkboxes if the respondent is in the consideration-set or current best
+            if (current_best || consideration_set) {
+              checkboxes <- matrix(0, nrow = current$alt, ncol = 1L)
+              for (i in seq_len(current$alt)) {
+                checkboxes[i, ] <- sprintf('<input type = "checkbox" value = "%s" id = "%s" />',
+                                           i, paste("considered", task_index, i, sep = "_"))
+              }
+              names_tmp <- colnames(task_matrix)
+              task_matrix <- cbind(task_matrix, checkboxes)
+              colnames(task_matrix) <- c(names_tmp, "I actively consider")
+            }
+            
+            # Add the choice response
             radio_choice <- matrix(0, nrow = current$alt, ncol = 1L)
             for (i in seq_len(current$alt)) {
-              radio_choice[i, ] <- sprintf('<input type = "radio", name = "%s", value = "%s"/>',
+              radio_choice[i, ] <- sprintf('<input type = "radio" name = "%s" value = "%s"/>',
                                            response_id,
-                                           # 'choice',
                                            responses()[i])
             }
 
             # Combine with radio buttons and set dimension names
+            names_tmp <- colnames(task_matrix)
             task_matrix <- cbind(task_matrix, radio_choice)
-            colnames(task_matrix) <- c(names_attributes, "I choose")
+            colnames(task_matrix) <- c(names_tmp, "I choose")
             rownames(task_matrix) <- paste0("Wine ", seq_len(current$alt))
             
             # Return the matrix
@@ -331,11 +346,20 @@ server <- function(input, output, session) {
     text_id <- paste0("text_", current$question)
     response_id <- paste0("response_", current$question)
     
-    # Show/hide reveal next alternative
-    if (question_type == "choice_task" && sequential == TRUE) {
-      shinyjs::showElement("next_alt")
-    } else {
-      shinyjs::hideElement("next_alt")
+    # JS for buttons
+    shinyjs::hideElement("next_alt")
+    
+    if (question_type == "choice_task") {
+      # Define the task index
+      task_index <- as.integer(
+        str_remove(
+          dplyr::pull(outline, "question_id")[current$page], "ct_"
+        )
+      )
+      
+      if (sequential) {
+        shinyjs::showElement("next_alt")
+      } 
     }
     
     if (page_type == "first_page") {
@@ -378,6 +402,13 @@ server <- function(input, output, session) {
           output[["check"]] <- renderPrint({
             str(input[[response_id]])
           })
+          
+          if (current_best || consideration_set) {
+            checkbox_names <- paste("considered", task_index, seq_len(current$alt), sep = "_")
+            output[["considered"]] <- renderPrint({
+              str(sapply(checkbox_names, function (i) input[[i]]))
+            })
+          }
         }
         
       })
@@ -394,9 +425,7 @@ server <- function(input, output, session) {
               div(uiOutput(response_id))
             },
             verbatimTextOutput("check"),
-            p(question_type),
-            p(response_id),
-            p(is.character(response_id))
+            verbatimTextOutput("considered")
           )
         )
       )
