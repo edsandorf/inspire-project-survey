@@ -24,8 +24,8 @@ ui <- fluidPage(
   
   # Create a custom command to unbind the radio buttons on re-draw of the table
   tags$script(HTML("Shiny.addCustomMessageHandler('unbind-DT', function(id) {
-          Shiny.unbindAll($('#'+id).find('table').DataTable().table().node());
-        })")),
+                   Shiny.unbindAll($('#'+id).find('table').DataTable().table().node());
+                   })")),
   
   fluidRow(class = "panel-main",
            column(1),
@@ -35,20 +35,20 @@ ui <- fluidPage(
                                            label = "Reveal another alternative",
                                            style = "material-flat",
                                            color = "success")
-                  ),
-           column(1)
            ),
+           column(1)
+  ),
   fluidRow(class = "panel-next-page",
            column(9),
            column(1, 
                   shinyWidgets::actionBttn(inputId = "next_page", label = "NULL",
-                                    style = "material-circle", color = "success",
-                                    icon = icon("arrow-right"))
-                  ),
+                                           style = "material-circle", color = "success",
+                                           icon = icon("arrow-right"))
+           ),
            column(1)
-           )
+  )
   
-)
+  )
 
 #-------------------------------------------------------------------------------
 #
@@ -67,9 +67,11 @@ server <- function(input, output, session) {
   current <- reactiveValues(
     page = 1, 
     alt = 1, 
-    question = 0
+    question = 0,
+    time = 1000
   )
   
+  # Initiate the reactive values for the timer and active
   timer <- reactiveVal(1000)
   active <- reactiveVal(TRUE)
   
@@ -259,6 +261,35 @@ server <- function(input, output, session) {
   })
   
   #-----------------------------------------------------------------------------
+  # When either the 'next_page' or 'next alt buttons are clicked
+  #-----------------------------------------------------------------------------
+  observeEvent({
+    input[["next_page"]]
+    input[["next_alt"]]}, {
+      question_type <- dplyr::pull(outline, question_type)[current$page]
+      
+      # Update the reactive value for current time - This needs to be done before the 
+      # data table is unbound
+      if (search_cost) {
+        # Define the task index
+        task_index <- as.integer(
+          str_remove(
+            dplyr::pull(outline, "question_id")[current$page], "ct_"
+          )
+        )
+        
+        # Update the reactive value for the time_index
+        current$time <- as.integer(time_delay[(task_index - 1) * nalts + current$alt])
+        timer(current$time)
+        active(TRUE)
+        
+        shinyjs::hideElement("next_alt")
+        shinyjs::delay(current$time, shinyjs::showElement("next_alt"))
+      }
+      
+    })
+  
+  #-----------------------------------------------------------------------------
   # When the question counter increases, re-draw the question. We need to create
   # two outputs: i) The question text, and ii) the response option.
   #-----------------------------------------------------------------------------
@@ -312,16 +343,16 @@ server <- function(input, output, session) {
           dom = "t", paging = FALSE, ordering = FALSE
         ),
         callback = DT::JS("table.rows().every(function(i, tab, row) {
-                            var $this = $(this.node());
-                            $this.attr('id', this.data()[0]);
-                            $this.addClass('shiny-input-radiogroup');
-                          });
+                          var $this = $(this.node());
+                          $this.attr('id', this.data()[0]);
+                          $this.addClass('shiny-input-radiogroup');
+      });
                           Shiny.unbindAll(table.table().node());
                           Shiny.bindAll(table.table().node());")
         )
-      }
+    }
     })
-  })
+      })
   
   #-----------------------------------------------------------------------------
   # When the question counter OR alternative counter changes, we need to
@@ -337,7 +368,7 @@ server <- function(input, output, session) {
           paste0("Question ", current$question, ": ",
                  dplyr::pull(outline, question)[current$page])
         })
-
+        
         # Get the response id
         response_id <- paste0("response_", current$question)
         question_type <- dplyr::pull(outline, question_type)[current$page]
@@ -345,19 +376,21 @@ server <- function(input, output, session) {
         
         # Render the choice tasks
         if (question_type == "choice_task") {
+          # Define the task index
+          task_index <- as.integer(
+            str_remove(
+              dplyr::pull(outline, "question_id")[current$page], "ct_"
+            )
+          )
+          
+          # Render the choice task
           output[[response_id]] <- DT::renderDataTable({
-            task_index <- as.integer(
-              str_remove(
-                dplyr::pull(outline, "question_id")[current$page], "ct_"
-                )
-              )
-
             if (sequential == FALSE) {
               current$alt <- nalts
             }
             
             the_rows <- ((1 + (task_index - 1) * nalts):(task_index * nalts))[seq_len(current$alt)]
-
+            
             # Subset the choice_tasks to only the current choice task
             task_matrix <- choice_tasks %>%
               slice(the_rows)
@@ -381,7 +414,7 @@ server <- function(input, output, session) {
                                            response_id,
                                            responses()[i])
             }
-
+            
             # Combine with radio buttons and set dimension names
             names_tmp <- colnames(task_matrix)
             task_matrix <- cbind(task_matrix, radio_choice)
@@ -390,27 +423,35 @@ server <- function(input, output, session) {
             
             # Return the matrix
             t(task_matrix)
-
+            
           }, escape = FALSE, server = FALSE, selection = "none",
           options = list(
             dom = "t", paging = FALSE, ordering = FALSE,
             preDrawCallback = DT::JS(
-            'function() { 
+              'function() { 
               Shiny.unbindAll(this.api().table().node()); }'),
             drawCallback = DT::JS(
               paste0("function() {",
                      paste0("var $radio_row = $(\"tr:has(input[name =", paste0("\'", response_id, "\'") ," ])\");"), 
                      "var $row = this.api().table().rows($radio_row);
-                      var $this = $($row.nodes(0));",
+                     var $this = $($row.nodes(0));",
                      paste0("$this.attr('id', ", paste0("\'", response_id, "\'"),");"),
                      "$this.addClass('shiny-input-radiogroup');
-                      Shiny.bindAll(this.api().table().node());}"
-            ))
-          )
-        )
-      }
+                     Shiny.bindAll(this.api().table().node());}"
+              ))
+            )
+          ) # End renderDT
+          
+          # Define the renderText() for the count down timer.
+          output$time_left <- renderText({
+            left_on_timer <- as.character(timer() / 1000)
+            if (nchar(left_on_timer) == 1) left_on_timer <- paste0(left_on_timer, ".")
+            paste0("Time left until you can reveal another alternative: ",
+                   stringr::str_pad(left_on_timer, 4, "right", "0"), "s")
+          })
+        }
+      })
     })
-  })
   
   #-----------------------------------------------------------------------------
   # When the page counter increases, store the current responses to the 
@@ -461,13 +502,13 @@ server <- function(input, output, session) {
     } # End first page
     
     if (page_type == "question") {
-      # Observer to apply JS and check the output
+      
+      # Toggle conditions and output observer
       observe({
         if (question_type == "likert") {
           # Check whether (all) questions are answered
           toggle_condition <- length(input[[response_id]]) > 0
           
-          # Check the output
           output[["check"]] <- renderPrint({
             str(input[[response_id]])
           })
@@ -487,7 +528,7 @@ server <- function(input, output, session) {
         } # End battery question
         
         if (question_type == "choice_task") { 
-
+          
           # Set the current_best and consideration_set observers
           if (current_best || consideration_set) {
             checkbox_names <- paste("considered", task_index, seq_len(current$alt), sep = "_")
@@ -511,28 +552,22 @@ server <- function(input, output, session) {
                 shinyjs::enable(checkbox_names[i])  
               }
             }
-            # Consideration set
-            
-            # Add minimum 1 for both to the final condition for whether they have answered the choice task
-            # Use a message to inform them under the choice task.
             
             output[["considered"]] <- renderPrint({
               str(sapply(checkbox_names, function (i) input[[i]]))
             })
-            
+
           } # End of if (current_best || consideration_set)
-          
-          # Check the output
+      
           output[["check"]] <- renderPrint({
             str(input[[response_id]])
           })
         } # End choice_task
-        
       }) # End JS and output observer
       
-      # Observer to run the timer
+      # Set up a second observer for the count down timer
       observe({
-        if (search_cost) {
+        if (search_cost && question_type == "choice_task") {
           invalidateLater(time_inc, session)
           isolate({
             if (active()) {
@@ -542,11 +577,10 @@ server <- function(input, output, session) {
               }
             }
           })
-        }
-      })
-      
-      # Output observer to avoid issues with the timer!
 
+        }
+      }) #  End time observer
+      
       # Render the question
       return(
         shiny::withTags(
@@ -558,13 +592,16 @@ server <- function(input, output, session) {
             if (question_type == "likert") {
               div(uiOutput(response_id))
             },
+            if (search_cost) {
+              textOutput("time_left")
+            },
             verbatimTextOutput("check"),
             verbatimTextOutput("considered")
           )
         )
       )
     }
-
+    
   })
   
   #-----------------------------------------------------------------------------
@@ -573,7 +610,7 @@ server <- function(input, output, session) {
   output[["user_interface"]] <- renderUI({
     user_interface()
   })
-}
+} # End server
 
 
 #-------------------------------------------------------------------------------
