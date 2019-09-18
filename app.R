@@ -93,7 +93,7 @@ server <- function(input, output, session) {
   # Define treatments and randomly allocate respondents
   #-----------------------------------------------------------------------------
   # treatment <- sample(seq_len(10), 1)
-  treatment <- 7
+  treatment <- 10
   
   # Enforce that your chosen alt has to be among your most preferred. 
   # Add popup if this is not the case. 
@@ -550,6 +550,8 @@ server <- function(input, output, session) {
         } # End battery question
         
         if (question_type == "choice_task") { 
+          #   Make the button next alternative inactive when all alternatives are revealed
+          shinyjs::toggleState(id = "next_alt", condition = current$alt < nalts)
           
           # Set the current_best and consideration_set observers
           if (current_best || consideration_set || consideration_set_all) {
