@@ -93,7 +93,10 @@ server <- function(input, output, session) {
   # Define treatments and randomly allocate respondents
   #-----------------------------------------------------------------------------
   # treatment <- sample(seq_len(10), 1)
-  treatment <- 9
+  treatment <- 7
+  
+  # Enforce that your chosen alt has to be among your most preferred. 
+  # Add popup if this is not the case. 
   
   # Standard choice task with 3 alternatives
   if (treatment == 1) {
@@ -101,6 +104,7 @@ server <- function(input, output, session) {
     sequential <- FALSE
     current_best <- FALSE
     consideration_set <- FALSE
+    consideration_set_all <- FALSE
     search_cost <- FALSE
   }
   
@@ -110,6 +114,7 @@ server <- function(input, output, session) {
     sequential <- FALSE
     current_best <- FALSE
     consideration_set <- FALSE
+    consideration_set_all <- FALSE
     search_cost <- FALSE
   }
   
@@ -119,6 +124,7 @@ server <- function(input, output, session) {
     sequential <- FALSE
     current_best <- FALSE
     consideration_set <- FALSE
+    consideration_set_all <- FALSE
     search_cost <- FALSE
   }
   
@@ -128,6 +134,7 @@ server <- function(input, output, session) {
     sequential <- TRUE
     current_best <- FALSE
     consideration_set <- FALSE
+    consideration_set_all <- FALSE
     search_cost <- FALSE
   }
   
@@ -137,49 +144,64 @@ server <- function(input, output, session) {
     sequential <- TRUE
     current_best <- TRUE
     consideration_set <- FALSE
+    consideration_set_all <- FALSE
     search_cost <- FALSE
   }
   
-  # Sequential choice task with the current consideration set
+  # Sequential choice task with the current consideration set (max 3)
   if (treatment == 6) {
     nalts <- 9L
     sequential <- TRUE
     current_best <- FALSE
     consideration_set <- TRUE
+    consideration_set_all <- FALSE
     search_cost <- FALSE
   }
   
-  # Sequential choice task with fixed time cost across alts and tasks
+  # Sequential choice task with the current consideration set (full)
   if (treatment == 7) {
     nalts <- 9L
     sequential <- TRUE
     current_best <- FALSE
     consideration_set <- FALSE
-    search_cost <- TRUE
-    time_delay <- rep(sample(seq(0, 3000, 250), 1), times = (tasks * nalts))
+    consideration_set_all <- TRUE
+    search_cost <- FALSE
   }
   
-  # Sequential choice tasks with fixed cost across alts, but variable across tasks
+  # Sequential choice task with fixed time cost across alts and tasks
   if (treatment == 8) {
     nalts <- 9L
     sequential <- TRUE
     current_best <- FALSE
     consideration_set <- FALSE
+    consideration_set_all <- FALSE
     search_cost <- TRUE
-    time_delay <- rep(sample(seq(0, 3000, 250), tasks, replace = TRUE), each = nalts)
+    time_delay <- rep(sample(seq(0, 3000, 250), 1), times = (tasks * nalts))
   }
   
-  # Sequential choice tasks with variable time cost across alts and tasks
+  # Sequential choice tasks with fixed cost across alts, but variable across tasks
   if (treatment == 9) {
     nalts <- 9L
     sequential <- TRUE
     current_best <- FALSE
     consideration_set <- FALSE
+    consideration_set_all <- FALSE
+    search_cost <- TRUE
+    time_delay <- rep(sample(seq(0, 3000, 250), tasks, replace = TRUE), each = nalts)
+  }
+  
+  # Sequential choice tasks with variable time cost across alts and tasks
+  if (treatment == 10) {
+    nalts <- 9L
+    sequential <- TRUE
+    current_best <- FALSE
+    consideration_set <- FALSE
+    consideration_set_all <- FALSE
     search_cost <- TRUE
     time_delay <- sample(seq(0, 3000, 250), tasks * nalts, replace = TRUE)
   }
   
-  if (treatment %in% c(7, 8, 9)) {
+  if (treatment %in% c(8, 9, 10)) {
     names(time_delay) <- paste0("time_delay_task_",
                                 rep(seq_len(tasks), each = nalts),
                                 "_alt_",
@@ -396,7 +418,7 @@ server <- function(input, output, session) {
               slice(the_rows)
             
             # Add checkboxes if the respondent is in the consideration-set or current best
-            if (current_best || consideration_set) {
+            if (current_best || consideration_set || consideration_set_all) {
               checkboxes <- matrix(0, nrow = current$alt, ncol = 1L)
               for (i in seq_len(current$alt)) {
                 checkboxes[i, ] <- sprintf('<input type = "checkbox" value = "%s" id = "%s" />',
@@ -530,7 +552,7 @@ server <- function(input, output, session) {
         if (question_type == "choice_task") { 
           
           # Set the current_best and consideration_set observers
-          if (current_best || consideration_set) {
+          if (current_best || consideration_set || consideration_set_all) {
             checkbox_names <- paste("considered", task_index, seq_len(current$alt), sep = "_")
             checked <- vapply(checkbox_names, function (x) {
               isTRUE(input[[x]])
@@ -540,6 +562,7 @@ server <- function(input, output, session) {
             # Current best condition
             if (current_best) toggle_input_condition <- 1
             if (consideration_set) toggle_input_condition <- 3
+            if (consideration_set_all) toggle_input_condition <- 9
             
             if (sum_checked >= toggle_input_condition) {
               for (i in seq_len(current$alt)) {
