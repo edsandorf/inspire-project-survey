@@ -100,6 +100,14 @@ server <- function(input, output, session) {
   # Define what happens when the session begins
   #-----------------------------------------------------------------------------
   
+  url_vars <- NULL
+  observe({
+    url_vars <<- parseQueryString(session$clientData$url_search)
+  })
+  
+
+  # Add exit URL
+  
   #-----------------------------------------------------------------------------
   # Define what happens when the session ends
   #-----------------------------------------------------------------------------
@@ -113,8 +121,7 @@ server <- function(input, output, session) {
   #-----------------------------------------------------------------------------
   # Define treatments and randomly allocate respondents
   #-----------------------------------------------------------------------------
-  # treatment <- sample(seq_len(10), 1)
-  treatment <- 10
+  treatment <- 6
   
   # Enforce that your chosen alt has to be among your most preferred. 
   # Add popup if this is not the case. 
@@ -231,6 +238,7 @@ server <- function(input, output, session) {
     # Initiate the reactive values for the timer and active
     timer <- reactiveVal(time_delay[1])
     active <- reactiveVal(TRUE)
+    checked_values <- "none"
   }
   
   #-----------------------------------------------------------------------------
@@ -292,6 +300,12 @@ server <- function(input, output, session) {
                                     range_value = c(0, (pages - 1)), title = NULL)
     
     current$alt <- 1
+    
+    # Reset the checked values
+    if (current_best || consideration_set || consideration_set_all) {
+      checked_values <<- "none"
+    }
+      
     current$page <- current$page + 1
     
     # Define the page and question types
@@ -319,7 +333,17 @@ server <- function(input, output, session) {
       timer(current$time)
       active(TRUE)
     }
+    
+    # Get the checked values at each click of the next page button
+    if (current_best || consideration_set || consideration_set_all) {
+      checkbox_names <- paste("considered", current$task, seq_len(current$alt), sep = "_")
+      checked_values <- vapply(checkbox_names, function (x) {
+        isTRUE(input[[x]])
+      }, logical(1))
+      checked_values <<- ifelse(isTRUE(checked_values), "checked", "none")
 
+    }
+    
     # Manually trigger unbind-DT when the next alternative button is clicked
     response_id <- paste0("response_", current$question)
     session$sendCustomMessage('unbind-DT', response_id)
@@ -441,8 +465,9 @@ server <- function(input, output, session) {
             if (current_best || consideration_set || consideration_set_all) {
               checkboxes <- matrix(0, nrow = current$alt, ncol = 1L)
               for (i in seq_len(current$alt)) {
-                checkboxes[i, ] <- sprintf('<input type = "checkbox" value = "%s" id = "%s" />',
-                                           i, paste("considered", current$task, i, sep = "_"))
+                checkboxes[i, ] <- sprintf('<input type = "checkbox" value = "%s" id = "%s" %s/>',
+                                           i, paste("considered", current$task, i, sep = "_"),
+                                           checked_values[i])
               }
               names_tmp <- colnames(task_matrix)
               task_matrix <- cbind(task_matrix, checkboxes)
@@ -530,7 +555,8 @@ server <- function(input, output, session) {
       return(
         shiny::withTags(
           div(
-            h1("Welcome")
+            h1("Welcome"),
+            p(paste0("You are in treatment: ", treatment))
           )
         )
       )
@@ -635,7 +661,6 @@ server <- function(input, output, session) {
             if (search_cost) {
               textOutput("time_left")
             },
-            p(current$task),
             verbatimTextOutput("check"),
             verbatimTextOutput("considered")
           )
