@@ -314,9 +314,11 @@ server <- function(input, output, session) {
   #-----------------------------------------------------------------------------
   observeEvent(input[["next_alt"]], {
     # Update the reactive value for the time_index
-    current$time <- as.integer(time_delay[(current$task - 1) * nalts + current$alt])
-    timer(current$time)
-    active(TRUE)
+    if (search_cost) {
+      current$time <- as.integer(time_delay[(current$task - 1) * nalts + current$alt])
+      timer(current$time)
+      active(TRUE)
+    }
 
     # Manually trigger unbind-DT when the next alternative button is clicked
     response_id <- paste0("response_", current$question)
