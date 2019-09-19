@@ -68,12 +68,9 @@ server <- function(input, output, session) {
     page = 1, 
     alt = 1, 
     question = 0,
-    time = 1000
+    time = 1000,
+    task = 0
   )
-  
-  # Initiate the reactive values for the timer and active
-  timer <- reactiveVal(1000)
-  active <- reactiveVal(TRUE)
   
   #-----------------------------------------------------------------------------
   # Define what happens when the session begins
@@ -206,6 +203,10 @@ server <- function(input, output, session) {
                                 rep(seq_len(tasks), each = nalts),
                                 "_alt_",
                                 rep(seq_len(nalts), times = tasks))
+    
+    # Initiate the reactive values for the timer and active
+    timer <- reactiveVal(time_delay[1])
+    active <- reactiveVal(TRUE)
   }
   
   #-----------------------------------------------------------------------------
@@ -261,55 +262,50 @@ server <- function(input, output, session) {
   # counters, and reset the alt counter.
   #-----------------------------------------------------------------------------
   observeEvent(input[["next_page"]], {
+    current$alt <- 1
     current$page <- current$page + 1
     
-    if (dplyr::pull(outline, page_type)[current$page] == "question") {
-      current$question <- current$question + 1
-    }
+    # Define the page and question types
+    page_type <- dplyr::pull(outline, page_type)[current$page]
+    question_type <- dplyr::pull(outline, question_type)[current$page]
+    if (is.na(question_type)) question_type <- "not a question page"
     
-    current$alt <- 1
+    # Update the question and task counters
+    if (page_type == "question") {
+      current$question <- current$question + 1
+      
+      if (question_type == "choice_task") {
+        current$task <- current$task + 1
+      }
+    }
   })
   
   #-----------------------------------------------------------------------------
   # When the 'next_alternative' button is clicked, increase the 'alt' counter
   #-----------------------------------------------------------------------------
   observeEvent(input[["next_alt"]], {
+    # Update the reactive value for the time_index
+    current$time <- as.integer(time_delay[(current$task - 1) * nalts + current$alt])
+    timer(current$time)
+    active(TRUE)
+
     # Manually trigger unbind-DT when the next alternative button is clicked
     response_id <- paste0("response_", current$question)
     session$sendCustomMessage('unbind-DT', response_id)
     
     # Increase the alternative counter
-    current$alt <- current$alt + 1
+    if (search_cost) {
+      shinyjs::disable("next_alt")
+      
+      shinyjs::delay(current$time, {
+        current$alt <- current$alt + 1
+        shinyjs::enable("next_alt")})
+      
+    } else {
+      current$alt <- current$alt + 1
+    }
+    
   })
-  
-  #-----------------------------------------------------------------------------
-  # When either the 'next_page' or 'next alt buttons are clicked
-  #-----------------------------------------------------------------------------
-  observeEvent({
-    input[["next_page"]]
-    input[["next_alt"]]}, {
-      question_type <- dplyr::pull(outline, question_type)[current$page]
-      
-      # Update the reactive value for current time - This needs to be done before the 
-      # data table is unbound
-      if (search_cost) {
-        # Define the task index
-        task_index <- as.integer(
-          str_remove(
-            dplyr::pull(outline, "question_id")[current$page], "ct_"
-          )
-        )
-        
-        # Update the reactive value for the time_index
-        current$time <- as.integer(time_delay[(task_index - 1) * nalts + current$alt])
-        timer(current$time)
-        active(TRUE)
-        
-        shinyjs::hideElement("next_alt")
-        shinyjs::delay(current$time, shinyjs::showElement("next_alt"))
-      }
-      
-    })
   
   #-----------------------------------------------------------------------------
   # When the question counter increases, re-draw the question. We need to create
@@ -398,20 +394,13 @@ server <- function(input, output, session) {
         
         # Render the choice tasks
         if (question_type == "choice_task") {
-          # Define the task index
-          task_index <- as.integer(
-            str_remove(
-              dplyr::pull(outline, "question_id")[current$page], "ct_"
-            )
-          )
-          
           # Render the choice task
           output[[response_id]] <- DT::renderDataTable({
             if (sequential == FALSE) {
               current$alt <- nalts
             }
             
-            the_rows <- ((1 + (task_index - 1) * nalts):(task_index * nalts))[seq_len(current$alt)]
+            the_rows <- ((1 + (current$task - 1) * nalts):(current$task * nalts))[seq_len(current$alt)]
             
             # Subset the choice_tasks to only the current choice task
             task_matrix <- choice_tasks %>%
@@ -422,7 +411,7 @@ server <- function(input, output, session) {
               checkboxes <- matrix(0, nrow = current$alt, ncol = 1L)
               for (i in seq_len(current$alt)) {
                 checkboxes[i, ] <- sprintf('<input type = "checkbox" value = "%s" id = "%s" />',
-                                           i, paste("considered", task_index, i, sep = "_"))
+                                           i, paste("considered", current$task, i, sep = "_"))
               }
               names_tmp <- colnames(task_matrix)
               task_matrix <- cbind(task_matrix, checkboxes)
@@ -500,16 +489,14 @@ server <- function(input, output, session) {
     shinyjs::hideElement("next_alt")
     
     if (question_type == "choice_task") {
-      # Define the task index
-      task_index <- as.integer(
-        str_remove(
-          dplyr::pull(outline, "question_id")[current$page], "ct_"
-        )
-      )
-      
       # Show the next_alt button if we are in a sequential treatment
       if (sequential) {
         shinyjs::showElement("next_alt")
+      }
+      
+      if (search_cost) {
+        # shinyjs::disable("next_alt")
+        # shinyjs::delay(current$time, shinyjs::enable("next_alt"))
       }
     }
     
@@ -555,7 +542,7 @@ server <- function(input, output, session) {
           
           # Set the current_best and consideration_set observers
           if (current_best || consideration_set || consideration_set_all) {
-            checkbox_names <- paste("considered", task_index, seq_len(current$alt), sep = "_")
+            checkbox_names <- paste("considered", current$task, seq_len(current$alt), sep = "_")
             checked <- vapply(checkbox_names, function (x) {
               isTRUE(input[[x]])
             }, logical(1))
@@ -590,6 +577,8 @@ server <- function(input, output, session) {
         } # End choice_task
       }) # End JS and output observer
       
+      
+      
       # Set up a second observer for the count down timer
       observe({
         if (search_cost && question_type == "choice_task") {
@@ -620,6 +609,7 @@ server <- function(input, output, session) {
             if (search_cost) {
               textOutput("time_left")
             },
+            p(current$task),
             verbatimTextOutput("check"),
             verbatimTextOutput("considered")
           )
