@@ -18,7 +18,7 @@ source("global.R")
 #
 #
 #-------------------------------------------------------------------------------
-ui <- fluidPage(
+ui <- fluidPage(theme = "master.css",
   # Initiate shinyJS
   shinyjs::useShinyjs(),
   
@@ -27,28 +27,52 @@ ui <- fluidPage(
                    Shiny.unbindAll($('#'+id).find('table').DataTable().table().node());
                    })")),
   
-  fluidRow(class = "panel-main",
-           column(1),
-           column(10,
-                  uiOutput("user_interface"),
-                  shinyWidgets::actionBttn(inputId = "next_alt",
-                                           label = "Reveal another alternative",
-                                           style = "material-flat",
-                                           color = "success")
-           ),
-           column(1)
+  # Add the loading screen
+  div(id = "loading-screen",
+    div(class = "loader")
   ),
-  fluidRow(class = "panel-next-page",
-           column(9),
-           column(1, 
-                  shinyWidgets::actionBttn(inputId = "next_page", label = "NULL",
-                                           style = "material-circle", color = "success",
-                                           icon = icon("arrow-right"))
-           ),
-           column(1)
-  )
   
+  # Wrap the rest of the visible user interface in the hidden() environment
+  shinyjs::hidden(
+    div(id = "survey",
+        
+      # Title page
+      fluidRow(class = "top-panel",
+               column(8),
+               column(4,
+                      img(src = "mono-reverse-logo.png", class = "funder-panel-image", style = "border:0;"))
+      ),
+      
+      # Progress bar
+      fluidRow(class = "progress-bar-panel",
+               shinyWidgets::progressBar(id = "progress_bar", value = 0, range_value = c(0, (pages - 1)), display_pct = FALSE, title = NULL, striped = TRUE, status = "success")
+      ),
+      
+      # Main survey panel
+      fluidRow(class = "panel-main",
+               column(1),
+               column(10,
+                      uiOutput("user_interface"),
+                      shinyWidgets::actionBttn(inputId = "next_alt",
+                                               label = "Reveal another alternative",
+                                               style = "material-flat",
+                                               color = "success")
+               ),
+               column(1)
+      ),
+      
+      fluidRow(class = "panel-next-page",
+               column(9),
+               column(1, 
+                      shinyWidgets::actionBttn(inputId = "next_page", label = "NULL",
+                                               style = "material-circle", color = "success",
+                                               icon = icon("arrow-right"))
+               ),
+               column(1)
+      )
+    )
   )
+)
 
 #-------------------------------------------------------------------------------
 #
@@ -262,6 +286,11 @@ server <- function(input, output, session) {
   # counters, and reset the alt counter.
   #-----------------------------------------------------------------------------
   observeEvent(input[["next_page"]], {
+    #   Update the progressbar
+    shinyWidgets::updateProgressBar(session = session, id = "progress_bar",
+                                    value = current$page,
+                                    range_value = c(0, (pages - 1)), title = NULL)
+    
     current$alt <- 1
     current$page <- current$page + 1
     
@@ -493,11 +522,6 @@ server <- function(input, output, session) {
       if (sequential) {
         shinyjs::showElement("next_alt")
       }
-      
-      if (search_cost) {
-        # shinyjs::disable("next_alt")
-        # shinyjs::delay(current$time, shinyjs::enable("next_alt"))
-      }
     }
     
     if (page_type == "first_page") {
@@ -625,6 +649,13 @@ server <- function(input, output, session) {
   output[["user_interface"]] <- renderUI({
     user_interface()
   })
+  
+  #-----------------------------------------------------------------------------
+  # Hide the loading message when the survey function is done
+  #-----------------------------------------------------------------------------
+  shinyjs::hide(id = "loading-screen", anim = TRUE, animType = "fade")
+  shinyjs::show("survey")
+  
 } # End server
 
 
