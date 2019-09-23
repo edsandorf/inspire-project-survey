@@ -96,6 +96,8 @@ server <- function(input, output, session) {
     task = 0
   )
   
+  checked <- reactiveValues()
+  
   #-----------------------------------------------------------------------------
   # Define what happens when the session begins
   #-----------------------------------------------------------------------------
@@ -238,7 +240,6 @@ server <- function(input, output, session) {
     # Initiate the reactive values for the timer and active
     timer <- reactiveVal(time_delay[1])
     active <- reactiveVal(TRUE)
-    checked_values <- "none"
   }
   
   #-----------------------------------------------------------------------------
@@ -303,7 +304,9 @@ server <- function(input, output, session) {
     
     # Reset the checked values
     if (current_best || consideration_set || consideration_set_all) {
-      checked_values <<- "none"
+      lapply(seq_len(nalts), function (x) {
+        checked[[paste0("alt_", x)]] <- ""
+      })
     }
       
     current$page <- current$page + 1
@@ -340,8 +343,9 @@ server <- function(input, output, session) {
       checked_values <- vapply(checkbox_names, function (x) {
         isTRUE(input[[x]])
       }, logical(1))
-      checked_values <<- ifelse(isTRUE(checked_values), "checked", "none")
-
+      for (i in seq_along(checked_values)) {
+        checked[[paste0("alt_", i)]] <- ifelse(isTRUE(checked_values[i]), "checked", "")
+      }
     }
     
     # Manually trigger unbind-DT when the next alternative button is clicked
@@ -466,8 +470,9 @@ server <- function(input, output, session) {
               checkboxes <- matrix(0, nrow = current$alt, ncol = 1L)
               for (i in seq_len(current$alt)) {
                 checkboxes[i, ] <- sprintf('<input type = "checkbox" value = "%s" id = "%s" %s/>',
-                                           i, paste("considered", current$task, i, sep = "_"),
-                                           checked_values[i])
+                                           i,
+                                           paste("considered", current$task, i, sep = "_"),
+                                           checked[[paste0("alt_", i)]])
               }
               names_tmp <- colnames(task_matrix)
               task_matrix <- cbind(task_matrix, checkboxes)
