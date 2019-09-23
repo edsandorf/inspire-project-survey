@@ -335,6 +335,9 @@ server <- function(input, output, session) {
   # When the 'next_alternative' button is clicked, increase the 'alt' counter
   #-----------------------------------------------------------------------------
   observeEvent(input[["next_alt"]], {
+    # Get the response_id
+    response_id <- paste0("response_", current$question)
+    
     # Update the reactive value for the time_index
     if (search_cost) {
       current$time <- as.integer(time_delay[(current$task - 1) * nalts + current$alt])
@@ -354,7 +357,6 @@ server <- function(input, output, session) {
     }
     
     # Manually trigger unbind-DT when the next alternative button is clicked
-    response_id <- paste0("response_", current$question)
     session$sendCustomMessage('unbind-DT', response_id)
     
     # Increase the alternative counter
@@ -554,13 +556,6 @@ server <- function(input, output, session) {
     # JS for buttons
     shinyjs::hideElement("next_alt")
     
-    if (question_type == "choice_task") {
-      # Show the next_alt button if we are in a sequential treatment
-      if (sequential) {
-        shinyjs::showElement("next_alt")
-      }
-    }
-    
     if (page_type == "first_page") {
       return(
         shiny::withTags(
@@ -573,6 +568,12 @@ server <- function(input, output, session) {
     } # End first page
     
     if (page_type == "question") {
+      if (question_type == "choice_task") {
+        # Show the next_alt button if we are in a sequential treatment
+        if (sequential) {
+          shinyjs::showElement("next_alt")
+        }
+      }
       
       # Toggle conditions and output observer
       observe({
@@ -676,7 +677,7 @@ server <- function(input, output, session) {
           )
         )
       )
-    }
+    } # End question page
     
     if (page_type == "final_page") {
       # Hide the 'next_page' button
@@ -693,7 +694,7 @@ server <- function(input, output, session) {
           )
         )
       )
-    }
+    } # End final page
     
   })
   
