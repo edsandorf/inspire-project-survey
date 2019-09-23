@@ -628,16 +628,27 @@ server <- function(input, output, session) {
               }
             }
             
+            consideration_check <- as.integer(input[[response_id]]) %in% which(checked %in% TRUE)
+            
             output[["considered"]] <- renderPrint({
               str(sapply(checkbox_names, function (i) input[[i]]))
             })
 
+          } else {
+            consideration_check <- TRUE
           } # End of if (current_best || consideration_set)
-      
+          
+          shinyjs::reset(response_id)
+          
+          # Check whether (all) questions are answered
+          toggle_condition <- length(input[[response_id]]) > 0 && consideration_check
+          
           output[["check"]] <- renderPrint({
             str(input[[response_id]])
           })
         } # End choice_task
+        
+        shinyjs::toggleState("next_page", condition = toggle_condition)
       }) # End JS and output observer
       
       
