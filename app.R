@@ -108,7 +108,12 @@ server <- function(input, output, session) {
   })
   
 
+  # Generate a survey specific ID number
+  resp_id <- paste0(sample(c(letters, LETTERS, 0:9), 10), collapse = "")
+  output$resp_id <- renderText(resp_id)
+  
   # Add exit URL
+  exit_url <- paste0("https://inspire-project.info/?id=", resp_id, "&?test=", 8)
   
   #-----------------------------------------------------------------------------
   # Define what happens when the session ends
@@ -668,6 +673,23 @@ server <- function(input, output, session) {
             },
             verbatimTextOutput("check"),
             verbatimTextOutput("considered")
+          )
+        )
+      )
+    }
+    
+    if (page_type == "final_page") {
+      # Hide the 'next_page' button
+      shinyjs::hideElement("next_page")
+      
+      return(
+        shiny::withTags(
+          div(
+            p("Thank you very much for participating."),
+            p("To claim your reward for participating, please click the button below to be redirected."),
+            a(h4("Exit the survey", class = "btn btn-default action-button" , 
+                 style = "fontweight:600"),
+              href = exit_url)
           )
         )
       )
