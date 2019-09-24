@@ -211,7 +211,7 @@ server <- function(input, output, session) {
     consideration_set <- FALSE
     consideration_set_all <- FALSE
     search_cost <- TRUE
-    time_delay <- rep(sample(seq(0, 3000, 250), 1), times = (tasks * nalts))
+    time_delay <- rep(sample(seq(0, 5000, 250), 1), times = (tasks * nalts))
   }
   
   # Sequential choice tasks with fixed cost across alts, but variable across tasks
