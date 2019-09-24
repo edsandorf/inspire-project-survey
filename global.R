@@ -60,3 +60,12 @@ save_db <- function (x, db_name, db_config) {
 #-------------------------------------------------------------------------------
 not_all_na <- function (x) {!all(is.na(x))}
 
+#-------------------------------------------------------------------------------
+# Define a function for labeling the mandatory fields in the consent form
+#-------------------------------------------------------------------------------
+label_mandatory <- function(label){
+  tagList(
+    label,
+    span("*", class = "mandatory-star")
+  )
+}

@@ -128,7 +128,8 @@ server <- function(input, output, session) {
   #-----------------------------------------------------------------------------
   # Define treatments and randomly allocate respondents
   #-----------------------------------------------------------------------------
-  treatment <- 6
+  # treatment <- 6
+  treatment <- sample(1:10, 1)
   
   # Enforce that your chosen alt has to be among your most preferred. 
   # Add popup if this is not the case. 
@@ -515,6 +516,7 @@ server <- function(input, output, session) {
                      "var $row = this.api().table().rows($radio_row);
                      var $this = $($row.nodes(0));",
                      paste0("$this.attr('id', ", paste0("\'", response_id, "\'"),");"),
+                     paste0("$this.prop('checked', false);"),
                      "$this.addClass('shiny-input-radiogroup');
                      Shiny.bindAll(this.api().table().node());}"
               ))
@@ -566,6 +568,39 @@ server <- function(input, output, session) {
         )
       )
     } # End first page
+    
+    if (page_type == "consent_page") {
+      # Define the mandatory consent fields
+      mandatory <- c("consent_item_one", "consent_item_two", "consent_item_three",
+                     "consent_item_four", "consent_item_five", "consent_item_six")
+      
+      # Check that all the boxes have been ticked
+      observe({
+        ticked <- vapply(mandatory, function(x){
+          isTRUE(input[[x]])
+        },
+        logical(1))
+        
+        toggle_condition <- all(ticked)
+        
+        shinyjs::toggleState(id = "next_page", condition = toggle_condition)
+      })
+      
+      return(
+        shiny::withTags({
+          div(
+            h3("Consent form"),
+            p("Please confirm that you have read and understood each of the items listed below. If you do wish to give consent you will be directed away from the survey."),
+            shinyWidgets::materialSwitch(inputId = "consent_item_one", label = label_mandatory("I confirm that I have read and understood the information sheet explaining the research project."), value = FALSE, status = "success", right = TRUE, width = "100%"),
+            shinyWidgets::materialSwitch(inputId = "consent_item_two", label = label_mandatory("I understand that my participation is voluntary and that I am free to withdraw at any time during the survey, but that any data collected up until this point may be used in analysis."), value = FALSE, status = "success", right = TRUE, width = "100%"),
+            shinyWidgets::materialSwitch(inputId = "consent_item_three", label = label_mandatory("I have been given a unique identifying number and know whom to contact should I wish to obtain a copy of the data the researchers hold about me."), value = FALSE, status = "success", right = TRUE, width = "100%"),
+            shinyWidgets::materialSwitch(inputId = "consent_item_four", label = label_mandatory("I understand that my responses will be kept anonymous and I give permission for members of the research team to have access to my anonymised responses."), value = FALSE, status = "success", right = TRUE, width = "100%"),
+            shinyWidgets::materialSwitch(inputId = "consent_item_five", label = label_mandatory("I agree for research data collected in the study to be made available to researchers, including those working outside the EU to be used in other research studies. I understand that any data that leave the research group will be fully anonymised so that I cannot be identified."), value = FALSE, status = "success", right = TRUE, width = "100%"),
+            shinyWidgets::materialSwitch(inputId = "consent_item_six", label = label_mandatory("I agree to take part in this study."), value = FALSE, status = "success", right = TRUE, width = "100%")
+          )
+        })
+      )
+    } # End consent page
     
     if (page_type == "question") {
       if (question_type == "choice_task") {
