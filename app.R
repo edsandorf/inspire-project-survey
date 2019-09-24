@@ -410,6 +410,17 @@ server <- function(input, output, session) {
         })
       } 
       
+      # Render a dropdown menu question
+      if (question_type == "dropdown") {
+        output[[response_id]] <- renderUI({
+          shiny::selectInput(inputId = response_id,
+                             label = "Please select: ",
+                             choices = c("", responses()),
+                             selected = character(0),
+                             width = "100%")
+        })
+      }
+      
       # Render the battery of likert scales
       if (question_type == "battery") {
         output[[response_id]] <- DT::renderDataTable({
@@ -698,6 +709,15 @@ server <- function(input, output, session) {
           })
         } # End Likert scale question
         
+        if (question_type == "dropdown") {
+          # Check whether (all) questions are answered
+          toggle_condition <- input[[response_id]] != ""
+          
+          output[["check"]] <- renderPrint({
+            str(input[[response_id]])
+          })
+        } # End dropdown menu question
+        
         if (question_type == "battery") {
           # Check whether (all) questions are answered
           filled <- vapply(battery_questions(), function (x) {
@@ -789,10 +809,10 @@ server <- function(input, output, session) {
             if (question_type == "battery" || question_type == "choice_task") {
               div(DT::dataTableOutput(response_id))
             },
-            if (question_type == "likert") {
+            if (question_type == "likert" || question_type == "dropdown") {
               div(uiOutput(response_id))
             },
-            if (search_cost) {
+            if (search_cost && question_type == "choice_task") {
               textOutput("time_left")
             },
             verbatimTextOutput("check"),
