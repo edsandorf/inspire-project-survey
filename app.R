@@ -53,10 +53,16 @@ ui <- fluidPage(theme = "master.css",
                column(1),
                column(10,
                       uiOutput("user_interface"),
+                      # Button to reveal the next alternative
                       shinyWidgets::actionBttn(inputId = "next_alt",
                                                label = "Reveal another alternative",
                                                style = "material-flat",
-                                               color = "success")
+                                               color = "success"),
+                      
+                      # Downlaod buttton for participant information sheet
+                      shinyWidgets::downloadBttn(outputId = "download_info",
+                                                 label = "Participant information sheet",
+                                                 style = "material-flat", color = "success")
                ),
                column(1)
       ),
@@ -557,6 +563,7 @@ server <- function(input, output, session) {
     
     # JS for buttons
     shinyjs::hideElement("next_alt")
+    shinyjs::hideElement("download_info_bttn")
     
     if (page_type == "first_page") {
       return(
@@ -568,6 +575,76 @@ server <- function(input, output, session) {
         )
       )
     } # End first page
+    
+    if (page_type == "info_page") {
+      # Show the download button
+      shinyjs::showElement("download_info_bttn")
+      
+      # Define the download handler for the button
+      output$download_info <- downloadHandler(
+        filename = "participant-information-sheet.pdf",
+        content = function(file) {
+          file.copy(file.path("www", "participant-information-sheet-survey.pdf"), file)
+        }
+      )
+      
+      return(
+        shiny::withTags({
+          div(h2("Participant information sheet"),
+              
+              h3("Your unique ID number: "),
+              p(tags$b(resp_id)),
+              
+              h3("Research Project"),
+              p("The Influence of Information Search on Preference Formation and Choice (INSPiRE)"),
+              
+              h3("Background and aims of project"),
+              p("We would like to invite you to take part in this survey. This study aims to improve our understanding of how people make choices. When people make choices, they also make trade-offs. To get more of something, you might have to give up something else. For example, how much money you are willing to give up to help conservation efforts. A better understanding of these choices and trade-offs may help researchers provide policy makers with more accurate information."),
+              
+              h3("Why have I been invited to take part?"),
+              p("You have been invited to take part because you are a UK resident aged 18 or over and are registered with [INSERT PANEL COMPANY HERE]."),
+              
+              h3("Do I have to take part?"),
+              p("Participation is voluntary. If you do decide to take part, you can withdraw your participation at any time without needing to explain and without penalty by closing your browser window.  If you withdraw we will not collect any more data from you. However, any data collected up until the point that you withdraw will be kept and used in the data analysis. You will be given this information sheet to keep and be asked to complete an electronic consent form."),
+              
+              h3("What will happen if I take part?"),
+              p("You will have to complete one online survey. The survey will take approximately 15 minutes to complete. We ask that you complete the survey in one sitting as it is not possible to rejoin later."),
+              
+              h3("Are there any potential risks in taking part?"),
+              p("There are no forseeable risks in taking part?"),
+              
+              h3("Are there any benefits in taking part?"),
+              p("The compensation for taking part in the survey is standard and stipulated by the survey company."),
+              
+              h3("Legal basis for processing personal data"),
+              p("As part of the project we will be recording personal data relating to you.  This will be processed in accordance with the General Data Protection Regulation (GDPR).  Under GDPR the legal basis for processing your personal data will be public interest/the official authority of the University. All responses will be treated confidenially and all data collected anonymized."),
+              
+              h3("What happens to the data I provide?"),
+              p("The research data will be anonymized by removing any personal identifiers such as names, e-mail addresses or IP-addresses, so nothing about you will be identifiable. Your  data will be kept for two years on Research Drive, a secure data centre on the Stirling campus, and then will be lodged in DataSTORRE. The data will be kept for a minimum of 10 years after last publication or access of the data in accordance with the University of Stirling’s research data policy."),
+              
+              h3("Future uses of the data"),
+              p("Due to the nature of this research, it is possible that other researchers may find the data useful to answering other research questions. We will ask for your explicit consent for your data to be shared in this way and, if you agree, we will ensure that the data collected is untraceable back to you before letting others use it."),
+              
+              h3("Will the research be published?"),
+              p("The research will be published in academic journals. You will not be identifiable in any publication. The University of Stirling is committed to making the outputs of research publicly accessible and supports this commitment through their online open access repository STORRE. Unless funder/publisher requirements prevent us, this research will be publicly disseminated through this open access repository."),
+              
+              h3("Who is organizing and funding the research?"),
+              p("This project is funded by the European Union’s Horizon 2020 research and innovation program under the Marie Sklodowska-Curie grant agreement No 793163."),
+              
+              h3("Who has reviewed this research project?"),
+              p("The ethical approaches of this project have been approved via The University of Stirling  General University Ethics Panel."),
+              
+              h3("Your rights"),
+              p("You have the right to request to see a copy of the information we hold about you. You have the right to withdraw from the survey at any time without giving reasons and without consequences to you, and we will not collect any more data from you. However, any data you have provided up to the point of withdrawal may be used for analysis."),
+              
+              h3("Who do I contact if I have concerns about htis study or I wish to complain?"),
+              p("If you would like to discuss the research with someone, please feel free to contact Dr Erlend Dancke Sandorf via e-mail: e.d.sandorf@stir.ac.uk. If you would like to discuss the research with someone not directly involved with the project, please contact Dr. Mirko Moro via e-mail: mirko.moro@stir.ac.uk. You have the right to lodge a complaint against the University regarding data protection issues with the Information Commissioner’s Office (https://ico.org.uk/concerns/). The University’s Data Protection Officer is Joanna Morrow, Deputy Secretary.  If you have any questions relating to data protection these can be addressed to data.protection@stir.ac.uk in the first instance."),
+              
+              p("You can download a copy of this information by clicking the button below. If you wish to keep up to date with the research, please keep an eye on the project website: https://inspire-project.info")
+          )
+        })
+      )
+    } # End participant information page
     
     if (page_type == "consent_page") {
       # Define the mandatory consent fields

@@ -1,5 +1,6 @@
 page_type,question_id,question_type,question,battery_1,battery_2,battery_3,battery_4,battery_5,battery_6,option_1,option_2,option_3,option_4,option_5,option_6,option_7,option_9,option_10,option_11
 first_page,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+info_page,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
 consent_page,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
 question,opinions,battery,Please indicate your opinion,Opinion 1,Opinion 2,Opinion 3,Opinion 4,Opinion 5,Opinion 6,Strongly disagree,Disagree,Neither,Agree,Strongly agree,NA,NA,NA,NA,NA
 question,attitudes,battery,Please indicate your attitudes,Attitude 1,Attitude 2,Attitude 3,NA,NA,NA,Strongly disagree,Disagree,Neither,Agree,Strongly agree,NA,NA,NA,NA,NA
