@@ -1,10 +1,21 @@
-page_type,question_id,question_type,question,battery_1,battery_2,battery_3,battery_4,battery_5,battery_6,option_1,option_2,option_3,option_4,option_5,option_6,option_7,option_9,option_10,option_11
-first_page,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
-info_page,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
-consent_page,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
-question,opinions,battery,Please indicate your opinion,Opinion 1,Opinion 2,Opinion 3,Opinion 4,Opinion 5,Opinion 6,Strongly disagree,Disagree,Neither,Agree,Strongly agree,NA,NA,NA,NA,NA
-question,attitudes,battery,Please indicate your attitudes,Attitude 1,Attitude 2,Attitude 3,NA,NA,NA,Strongly disagree,Disagree,Neither,Agree,Strongly agree,NA,NA,NA,NA,NA
-question,knowledge,likert,How would you rate your knowledge of wine,NA,NA,NA,NA,NA,NA,Novice,Intermediate,Advanced,Expert,NA,NA,NA,NA,NA,NA
-question,ct_1,choice_task,Please choose your most preferred wine,NA,NA,NA,NA,NA,NA,1,2,3,4,5,6,7,8,9,NA
-question,ct_2,choice_task,Please choose your most preferred wine,NA,NA,NA,NA,NA,NA,1,2,3,4,5,6,7,8,9,NA
-final_page,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+page_type,question_id,question_type,question,battery_1,battery_2,battery_3,battery_4,battery_5,battery_6,battery_7,battery_8,option_1,option_2,option_3,option_4,option_5,option_6,option_7,option_9,option_10,option_11,option_12,Option_13,
+first_page,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,
+info_page,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,
+consent_page,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,
+section_1,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,
+question,purchase_location,battery,How often do you drink the following beverages? Please select the closest that applies.,Wine,Beer,Spirits/Liquor,Mixed Drinks,NA,NA,NA,NA,Never,Daily,Weekly,2 or 3 times per month,Monthly,2 or 3 times per year,Prefer not to say,NA,NA,NA,NA,NA,
+question,purchase_frequency,battery,How often do you purchase the following beverages? Please select the closest that applies,Wine,Beer,Spirits/Liquor,Mixed Drinks,NA,NA,NA,NA,Never,Daily,Weekly,2 or 3 times per month,Monthly,2 or 3 times per year,Prefer not to say,NA,NA,NA,NA,NA,
+question,drink_frequency,battery,Where do you normally purchase the following beverages? Please select the closest that applies,Wine,Beer,Spirits/Liquor,Mixed Drinks,NA,NA,NA,NA,Grocery Store or Supermarket,Off-Licence,Winery or specialist shop,Online,Restaurant/Pub,Prefer not to say,NA,NA,NA,NA,NA,NA,
+question,knowledge,battery_randomized,To what extent to you disagree/agree with the following statements,I know everything about wine,I know how to judge the quality of wine,I know enough about wine to be confident when I make a purchase,I do not feel very knowledgable about wine,"In my friend group, I’m one of the “wine experts”","Compared to most people, I know less about wine","When it comes to wine, I really don’t know a lot",I can tell if wine is worth the price or not,Strongly disagree,Disagree,Neither disagree nor agree,Agree,Strongly Agree,I don’t know,NA,NA,NA,NA,NA,NA,
+question,wine_spend,likert,How much do you typically spend on a bottle of wine?,Less than 5,5.00 – 7.49,7.50 – 9.99,10.00 – 12.49,12.50 – 14.99,15.00 – 20.00,More than 20.00,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,
+question,wine_tasting,likert,Have you ever participated in a wine tasting?,Yes,No,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+section_2,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,
+question,ct_1,choice_task,Please choose your most preferred wine,NA,NA,NA,NA,NA,NA,NA,NA,1,2,3,4,5,6,7,8,9,NA,NA,NA,
+question,ct_2,choice_task,Please choose your most preferred wine,NA,NA,NA,NA,NA,NA,NA,NA,1,2,3,4,5,6,7,8,9,NA,NA,NA,
+question,attribute_importance,battery,Please indicate how important each attribute was when making your choice,Country of origin,Color,Alcohol,Grape,Organic,Dry/Sweet or Light/Full bodied,Price,NA,Not important,Slightly important,Moderately important,Important,Very important,NA,NA,NA,NA,NA,NA,NA,
+question,gender,likert,What is your gender?,NA,NA,NA,NA,NA,NA,NA,NA,Female,Male,Other,Prefer not to say,NA,NA,NA,NA,NA,NA,NA,NA,
+question,age,dropdown,How old are you?,NA,NA,NA,NA,NA,NA,NA,NA,18-25,26-30,31-35,36-40,41-45,46-50,51-55,56-60,61-65,66-70,70 and over,Prefer not to say,
+question,education,likert,What is your highest attained level of education?,NA,NA,NA,NA,NA,NA,NA,NA,College,Bachelor,Master,PhD,Prefer not to say,NA,NA,NA,NA,NA,NA,NA,
+question,post_code,text,Can you please provide your postcode without the last two letters?,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,
+question,income,dropdown,What is your income before tax?,NA,NA,NA,NA,NA,NA,NA,NA,"Less than 6,000","6,000 - 12,999","13,000 - 18,999","19,000 - 25,999","26,000 - 31,999","32,000 - 47,999","48,000 - 63,999","64,000 - 95,999","More than 96,000",Prefer not to say,NA,NA,
+final_page,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,

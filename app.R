@@ -712,6 +712,28 @@ server <- function(input, output, session) {
       )
     } # End consent page
     
+    if (page_type == "section_1") {
+      return(
+        shiny::withTags(
+          div(
+            h1("Section 1: Your consumption and purchasing behavior"),
+            p("In the next section we will ask some questions relating to your consumption and purchasing of wine.")
+          )
+        )
+      )
+    } # End section 1 info page
+    
+    if (page_type == "section_2") {
+      return(
+        shiny::withTags(
+          div(
+            h1("Section 2: Your stated purchases of wine"),
+            p("[INSERT VIDEOS HERE DPENDING ON THE TREATMENT]")
+          )
+        )
+      )
+    } # End section 2 info page
+    
     if (page_type == "question") {
       if (question_type == "choice_task") {
         # Show the next_alt button if we are in a sequential treatment
