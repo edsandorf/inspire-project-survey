@@ -22,7 +22,7 @@ weights <- tibble::deframe(weights)
 # Define global variables
 #-------------------------------------------------------------------------------
 pages <- nrow(outline)
-tasks <- 2
+tasks <- 10
 nattr <- ncol(design)
 time_inc <- 250
 
