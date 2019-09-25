@@ -873,9 +873,12 @@ server <- function(input, output, session) {
             if (search_cost && question_type == "choice_task") {
               textOutput("time_left")
             },
-            verbatimTextOutput("check"),
-            verbatimTextOutput("considered"),
-            p(response_id)
+            if (!production) {
+              verbatimTextOutput("check")
+            },
+            if (!production) {
+              verbatimTextOutput("considered")
+            }
           )
         )
       )
