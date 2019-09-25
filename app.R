@@ -464,7 +464,8 @@ server <- function(input, output, session) {
           
         }, escape = FALSE, server = FALSE, selection = "none", 
         options = list(
-          dom = "t", paging = FALSE, ordering = FALSE
+          dom = "t", paging = FALSE, ordering = FALSE,
+          columnDefs = list(list(className = "dt-center", targets = seq_along(responses())))
         ),
         callback = DT::JS("table.rows().every(function(i, tab, row) {
                           var $this = $(this.node());
@@ -474,7 +475,7 @@ server <- function(input, output, session) {
                           Shiny.unbindAll(table.table().node());
                           Shiny.bindAll(table.table().node());")
         )
-    }
+    } # End question type battery question
     })
       })
   
@@ -546,6 +547,7 @@ server <- function(input, output, session) {
           }, escape = FALSE, server = FALSE, selection = "none",
           options = list(
             dom = "t", paging = FALSE, ordering = FALSE,
+            columnDefs = list(list(className = "dt-center", targets = seq_len(current$alt))),
             preDrawCallback = DT::JS(
               'function() { 
               Shiny.unbindAll(this.api().table().node()); }'),
