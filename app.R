@@ -841,8 +841,6 @@ server <- function(input, output, session) {
         shinyjs::toggleState("next_page", condition = toggle_condition)
       }) # End JS and output observer
       
-      
-      
       # Set up a second observer for the count down timer
       observe({
         if (search_cost && question_type == "choice_task") {
@@ -855,7 +853,6 @@ server <- function(input, output, session) {
               }
             }
           })
-
         }
       }) #  End time observer
       
@@ -900,7 +897,6 @@ server <- function(input, output, session) {
         )
       )
     } # End final page
-    
   })
   
   #-----------------------------------------------------------------------------

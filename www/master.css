@@ -68,6 +68,13 @@ body {
     width: 50px;
 }
 
+.panel-next-page {
+  margin-top: 20px;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  padding-top: 20px;
+}
+
 /*  FUNDER PANEL */
 .funder-panel {
     margin: 20px;
