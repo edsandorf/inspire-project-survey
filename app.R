@@ -421,6 +421,16 @@ server <- function(input, output, session) {
         })
       }
       
+      # Render a text input field
+      if (question_type == "text") {
+        output[[response_id]] <- renderUI({
+          shiny::textInput(inputId = response_id,
+                           label = "Please input your answer: ",
+                           value = "",
+                           width = "380px")
+        })
+      }
+      
       # Render the battery of likert scales
       if (question_type == "battery") {
         output[[response_id]] <- DT::renderDataTable({
@@ -709,7 +719,7 @@ server <- function(input, output, session) {
           })
         } # End Likert scale question
         
-        if (question_type == "dropdown") {
+        if (question_type == "dropdown" || question_type == "text") {
           # Check whether (all) questions are answered
           toggle_condition <- input[[response_id]] != ""
           
@@ -809,7 +819,7 @@ server <- function(input, output, session) {
             if (question_type == "battery" || question_type == "choice_task") {
               div(DT::dataTableOutput(response_id))
             },
-            if (question_type == "likert" || question_type == "dropdown") {
+            if (question_type == "likert" || question_type == "dropdown" || question_type == "text") {
               div(uiOutput(response_id))
             },
             if (search_cost && question_type == "choice_task") {
