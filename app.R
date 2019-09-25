@@ -103,6 +103,7 @@ server <- function(input, output, session) {
   )
   
   checked <- reactiveValues()
+  battery_randomized <- reactiveVal(FALSE)
   
   #-----------------------------------------------------------------------------
   # Define what happens when the session begins
@@ -295,11 +296,17 @@ server <- function(input, output, session) {
   # Get the questions for the likert batteries
   #-----------------------------------------------------------------------------
   battery_questions <- reactive({
-    outline %>%
+    tmp <- outline %>%
       slice(current$page) %>%
       select(starts_with("battery")) %>%
       select_if(not_all_na) %>%
       unlist(., use.names = FALSE)
+
+    if (battery_randomized()) {
+      tmp <- sample(tmp, length(tmp))
+    }
+    
+    return(tmp)
   })
   
   #-----------------------------------------------------------------------------
@@ -320,7 +327,8 @@ server <- function(input, output, session) {
         checked[[paste0("alt_", x)]] <- ""
       })
     }
-      
+    
+    battery_randomized(FALSE)
     current$page <- current$page + 1
     
     # Define the page and question types
@@ -335,6 +343,10 @@ server <- function(input, output, session) {
       if (question_type == "choice_task") {
         current$task <- current$task + 1
       }
+      
+      if (question_type == "battery_randomized") {
+        battery_randomized(TRUE)
+      } 
     }
   })
   
@@ -432,7 +444,7 @@ server <- function(input, output, session) {
       }
       
       # Render the battery of likert scales
-      if (question_type == "battery") {
+      if (question_type == "battery" || question_type == "battery_randomized") {
         output[[response_id]] <- DT::renderDataTable({
           rows <- length(battery_questions())
           cols <- length(responses())
@@ -728,7 +740,7 @@ server <- function(input, output, session) {
           })
         } # End dropdown menu question
         
-        if (question_type == "battery") {
+        if (question_type == "battery" || question_type == "battery_randomized") {
           # Check whether (all) questions are answered
           filled <- vapply(battery_questions(), function (x) {
             length(input[[x]]) > 0
@@ -816,7 +828,7 @@ server <- function(input, output, session) {
         shiny::withTags(
           div(
             h3(textOutput(text_id)),
-            if (question_type == "battery" || question_type == "choice_task") {
+            if (question_type == "battery" || question_type == "battery_randomized" || question_type == "choice_task") {
               div(DT::dataTableOutput(response_id))
             },
             if (question_type == "likert" || question_type == "dropdown" || question_type == "text") {
