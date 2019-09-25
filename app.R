@@ -420,7 +420,7 @@ server <- function(input, output, session) {
                                      width = "100%",
                                      status = "success")
         })
-      } 
+      } # End question type likert scale
       
       # Render a dropdown menu question
       if (question_type == "dropdown") {
@@ -431,7 +431,7 @@ server <- function(input, output, session) {
                              selected = character(0),
                              width = "100%")
         })
-      }
+      } # End question type dropdown
       
       # Render a text input field
       if (question_type == "text") {
@@ -441,7 +441,19 @@ server <- function(input, output, session) {
                            value = "",
                            width = "380px")
         })
-      }
+      } # End question type text
+      
+      # Render a checkbox question
+      if (question_type == "checkbox") {
+        output[[response_id]] <- renderUI({
+          shinyWidgets::awesomeCheckboxGroup(inputId = response_id,
+            label = "Please select all that apply: ",
+            choices = c(responses()),
+            selected = "None",
+            width = "100%",
+            status = "success")
+        })
+      } # End question type checkbox
       
       # Render the battery of likert scales
       if (question_type == "battery" || question_type == "battery_randomized") {
@@ -746,14 +758,14 @@ server <- function(input, output, session) {
       
       # Toggle conditions and output observer
       observe({
-        if (question_type == "likert") {
+        if (question_type == "likert" || question_type == "checkbox") {
           # Check whether (all) questions are answered
           toggle_condition <- length(input[[response_id]]) > 0
           
           output[["check"]] <- renderPrint({
             str(input[[response_id]])
           })
-        } # End Likert scale question
+        } # End Likert scale or checkbox question
         
         if (question_type == "dropdown" || question_type == "text") {
           # Check whether (all) questions are answered
@@ -855,14 +867,15 @@ server <- function(input, output, session) {
             if (question_type == "battery" || question_type == "battery_randomized" || question_type == "choice_task") {
               div(DT::dataTableOutput(response_id))
             },
-            if (question_type == "likert" || question_type == "dropdown" || question_type == "text") {
+            if (question_type == "likert" || question_type == "dropdown" || question_type == "text" || question_type == "checkbox") {
               div(uiOutput(response_id))
             },
             if (search_cost && question_type == "choice_task") {
               textOutput("time_left")
             },
             verbatimTextOutput("check"),
-            verbatimTextOutput("considered")
+            verbatimTextOutput("considered"),
+            p(response_id)
           )
         )
       )
