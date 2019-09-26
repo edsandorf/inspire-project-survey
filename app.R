@@ -98,7 +98,7 @@ server <- function(input, output, session) {
   
   # Standard choice task with 3 alternatives
   if (treatment == 1) {
-    nalts <- 3L
+    nalts <- 4L
     sequential <- FALSE
     current_best <- FALSE
     consideration_set <- FALSE
@@ -108,7 +108,7 @@ server <- function(input, output, session) {
   
   # Standard choice task with 6 alternatives
   if (treatment == 2) {
-    nalts <- 6L
+    nalts <- 7L
     sequential <- FALSE
     current_best <- FALSE
     consideration_set <- FALSE
@@ -118,7 +118,7 @@ server <- function(input, output, session) {
   
   # Standard choice tasks with 9 alternatives
   if (treatment == 3) {
-    nalts <- 9L
+    nalts <- 10L
     sequential <- FALSE
     current_best <- FALSE
     consideration_set <- FALSE
@@ -128,7 +128,7 @@ server <- function(input, output, session) {
   
   # Sequential choice tasks
   if (treatment == 4) {
-    nalts <- 9L
+    nalts <- 10L
     sequential <- TRUE
     current_best <- FALSE
     consideration_set <- FALSE
@@ -138,7 +138,7 @@ server <- function(input, output, session) {
   
   # Sequential choice tasks with the current best selected
   if (treatment == 5) {
-    nalts <- 9L
+    nalts <- 10L
     sequential <- TRUE
     current_best <- TRUE
     consideration_set <- FALSE
@@ -148,7 +148,7 @@ server <- function(input, output, session) {
   
   # Sequential choice task with the current consideration set (max 3)
   if (treatment == 6) {
-    nalts <- 9L
+    nalts <- 10L
     sequential <- TRUE
     current_best <- FALSE
     consideration_set <- TRUE
@@ -158,7 +158,7 @@ server <- function(input, output, session) {
   
   # Sequential choice task with the current consideration set (full)
   if (treatment == 7) {
-    nalts <- 9L
+    nalts <- 10L
     sequential <- TRUE
     current_best <- FALSE
     consideration_set <- FALSE
@@ -168,7 +168,7 @@ server <- function(input, output, session) {
   
   # Sequential choice task with fixed time cost across alts and tasks
   if (treatment == 8) {
-    nalts <- 9L
+    nalts <- 10L
     sequential <- TRUE
     current_best <- FALSE
     consideration_set <- FALSE
@@ -179,7 +179,7 @@ server <- function(input, output, session) {
   
   # Sequential choice tasks with fixed cost across alts, but variable across tasks
   if (treatment == 9) {
-    nalts <- 9L
+    nalts <- 10L
     sequential <- TRUE
     current_best <- FALSE
     consideration_set <- FALSE
@@ -190,7 +190,7 @@ server <- function(input, output, session) {
   
   # Sequential choice tasks with variable time cost across alts and tasks
   if (treatment == 10) {
-    nalts <- 9L
+    nalts <- 10L
     sequential <- TRUE
     current_best <- FALSE
     consideration_set <- FALSE
@@ -267,14 +267,14 @@ server <- function(input, output, session) {
   # Get the choice tasks and prepare to send all choice task data to the
   # data base
   #-----------------------------------------------------------------------------
-  profiles <- sample(seq_len(nrow(design)), (tasks * nalts), prob = weights)
+  profiles <- sample(seq_len(nrow(design)), (tasks * (nalts - 1)), prob = weights)
   choice_tasks <- design %>%
     slice(profiles)
   
   # Reorder the alternatives of the choice tasks to ensure no ordering effects
   choice_tasks <- choice_tasks %>%
-    mutate(ct_order = rep(sample(seq_len(tasks)), each = nalts),
-           alt_order = rep(sample(seq_len(nalts)), times = tasks)) %>%
+    mutate(ct_order = rep(sample(seq_len(tasks)), each = (nalts - 1)),
+           alt_order = rep(sample(seq_len((nalts - 1))), times = tasks)) %>%
     arrange(ct_order, alt_order) %>%
     select(-ct_order, -alt_order)
   
@@ -284,10 +284,19 @@ server <- function(input, output, session) {
   # Get the data ready to submit to the database
   data_attributes <- as.vector(t(choice_tasks))
   names(data_attributes) <- str_c(
-    rep(str_c("ct", seq_len(tasks), sep = "_"), each = (nalts * nattr)),
-    rep(names(choice_tasks), times = (nalts * tasks)),
-    rep(rep(seq_len(nalts), each = nattr), times = tasks), sep = "_"
+    rep(str_c("ct", seq_len(tasks), sep = "_"), each = ((nalts - 1) * nattr)),
+    rep(names(choice_tasks), times = ((nalts - 1) * tasks)),
+    rep(rep(seq_len((nalts - 1)), each = nattr), times = tasks), sep = "_"
   )
+  
+  # Add empty rows to the choice tasks, i.e. 
+  # row_index <- seq(1, ((nalts - 1) * tasks), nalts)
+  for (i in seq_len(nalts)) {
+    row_index <- 1 + (i - 1) * nalts
+    choice_tasks <- choice_tasks %>%
+      add_row(Country = "", Color = "", Alcohol = "", Grape = "", Organic = "",
+        Price = "", .before = row_index)
+  }
   
   #-----------------------------------------------------------------------------
   # Get the possible responses to each question
@@ -562,7 +571,12 @@ server <- function(input, output, session) {
             names_tmp <- colnames(task_matrix)
             task_matrix <- cbind(task_matrix, radio_choice)
             colnames(task_matrix) <- c(names_tmp, "I choose")
-            rownames(task_matrix) <- paste0("Wine ", seq_len(current$alt))
+            if (current$alt == 1) {
+              rownames(task_matrix) <- paste0("None of these wines")
+            } else {
+              rownames(task_matrix) <- c(paste0("None of these wines"), 
+                paste0("Wine ", seq_len(current$alt - 1)))
+            }
             
             # Return the matrix
             t(task_matrix)
