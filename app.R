@@ -331,6 +331,20 @@ server <- function(input, output, session) {
   # counters, and reset the alt counter.
   #-----------------------------------------------------------------------------
   observeEvent(input[["next_page"]], {
+    # Get the checked values at each click of the next page button
+    if (current_best || consideration_set || consideration_set_all) {
+      checkbox_names <- paste("considered", seq_len(current$alt), "task", current$task, sep = "_")
+      checked_values <- vapply(checkbox_names, function (x) {
+        isTRUE(input[[x]])
+      }, logical(1))
+      for (i in seq_along(checked_values)) {
+        checked[[paste0("alt_", i)]] <- ifelse(isTRUE(checked_values[i]), "checked", "")
+      }
+      
+      # Store the consideration sets
+      survey_output[paste("t", current$alt, checkbox_names, sep = "_")] <<- checked_values
+    }
+    
     #   Update the progressbar
     shinyWidgets::updateProgressBar(session = session, id = "progress_bar",
                                     value = current$page,
@@ -829,7 +843,7 @@ server <- function(input, output, session) {
             # Current best condition
             if (current_best) toggle_input_condition <- 1
             if (consideration_set) toggle_input_condition <- 3
-            if (consideration_set_all) toggle_input_condition <- 9
+            if (consideration_set_all) toggle_input_condition <- 10
             
             if (sum_checked >= toggle_input_condition) {
               for (i in seq_len(current$alt)) {
