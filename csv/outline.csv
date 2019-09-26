@@ -13,16 +13,16 @@ question,purchase_influence,battery_randomized,Please indicate the extent to whi
 question,preference_type,checkbox,What type of wine do you like?,NA,NA,NA,NA,NA,NA,NA,NA,Red,Rosé,White,Sparkling,Dessert red,Dessert white,I don’t have a preference,NA,NA,NA,NA,NA
 question,preference_grape,checkbox,Which of the following type of wines/grape varieties do you prefer?,NA,NA,NA,NA,NA,NA,NA,NA,Chardonnay,Sauvignon Blanc,Merlot,Riesling,Pinot Noir,Syrah/Shiraz,Zinfandel,Cabernet Sauvignon,Moscato,None of these,NA,NA
 section_2,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
-question,ct_1,choice_task,Please choose your most preferred wine,NA,NA,NA,NA,NA,NA,NA,NA,1,2,3,4,5,6,7,8,9,NA,NA,NA
-question,ct_2,choice_task,Please choose your most preferred wine,NA,NA,NA,NA,NA,NA,NA,NA,1,2,3,4,5,6,7,8,9,NA,NA,NA
-question,ct_3,choice_task,Please choose your most preferred wine,NA,NA,NA,NA,NA,NA,NA,NA,1,2,3,4,5,6,7,8,9,NA,NA,NA
-question,ct_4,choice_task,Please choose your most preferred wine,NA,NA,NA,NA,NA,NA,NA,NA,1,2,3,4,5,6,7,8,9,NA,NA,NA
-question,ct_5,choice_task,Please choose your most preferred wine,NA,NA,NA,NA,NA,NA,NA,NA,1,2,3,4,5,6,7,8,9,NA,NA,NA
-question,ct_6,choice_task,Please choose your most preferred wine,NA,NA,NA,NA,NA,NA,NA,NA,1,2,3,4,5,6,7,8,9,NA,NA,NA
-question,ct_7,choice_task,Please choose your most preferred wine,NA,NA,NA,NA,NA,NA,NA,NA,1,2,3,4,5,6,7,8,9,NA,NA,NA
-question,ct_8,choice_task,Please choose your most preferred wine,NA,NA,NA,NA,NA,NA,NA,NA,1,2,3,4,5,6,7,8,9,NA,NA,NA
-question,ct_9,choice_task,Please choose your most preferred wine,NA,NA,NA,NA,NA,NA,NA,NA,1,2,3,4,5,6,7,8,9,NA,NA,NA
-question,ct_10,choice_task,Please choose your most preferred wine,NA,NA,NA,NA,NA,NA,NA,NA,1,2,3,4,5,6,7,8,9,NA,NA,NA
+question,ct_1,choice_task,Please choose your most preferred wine,NA,NA,NA,NA,NA,NA,NA,NA,1,2,3,4,5,6,7,8,9,10,NA,NA
+question,ct_2,choice_task,Please choose your most preferred wine,NA,NA,NA,NA,NA,NA,NA,NA,1,2,3,4,5,6,7,8,9,10,NA,NA
+question,ct_3,choice_task,Please choose your most preferred wine,NA,NA,NA,NA,NA,NA,NA,NA,1,2,3,4,5,6,7,8,9,10,NA,NA
+question,ct_4,choice_task,Please choose your most preferred wine,NA,NA,NA,NA,NA,NA,NA,NA,1,2,3,4,5,6,7,8,9,10,NA,NA
+question,ct_5,choice_task,Please choose your most preferred wine,NA,NA,NA,NA,NA,NA,NA,NA,1,2,3,4,5,6,7,8,9,10,NA,NA
+question,ct_6,choice_task,Please choose your most preferred wine,NA,NA,NA,NA,NA,NA,NA,NA,1,2,3,4,5,6,7,8,9,10,NA,NA
+question,ct_7,choice_task,Please choose your most preferred wine,NA,NA,NA,NA,NA,NA,NA,NA,1,2,3,4,5,6,7,8,9,10,NA,NA
+question,ct_8,choice_task,Please choose your most preferred wine,NA,NA,NA,NA,NA,NA,NA,NA,1,2,3,4,5,6,7,8,9,10,NA,NA
+question,ct_9,choice_task,Please choose your most preferred wine,NA,NA,NA,NA,NA,NA,NA,NA,1,2,3,4,5,6,7,8,9,10,NA,NA
+question,ct_10,choice_task,Please choose your most preferred wine,NA,NA,NA,NA,NA,NA,NA,NA,1,2,3,4,5,6,7,8,9,10,NA,NA
 question,attribute_importance,battery,Please indicate how important each attribute was when making your choice,Country of origin,Color,Alcohol,Grape,Organic,Dry/Sweet or Light/Full bodied,Price,NA,Not important,Slightly important,Moderately important,Important,Very important,NA,NA,NA,NA,NA,NA,NA
 question,decision_difficulty,likert,How easy or difficult did you find it to choose your preferred bottle of wine in the choice situations presented earlier?,NA,NA,NA,NA,NA,NA,NA,NA,Very easy,Easy,Neither easy nor difficult,Difficult,Very difficult,I don’t know,NA,NA,NA,NA,NA,NA
 question,decision_strategy,battery_randomized,"Thinking about the choices you just made, please indicate how strongly you disagree or agree with each of the following statements.",My number one priority was to find my most preferred bottle of wine,I knew the bottle of wine I was looking for,I was looking for something specific and continued to browse until I found it,"Once I found my preferred bottle of wine, I didn’t feel the need to keep browsing",I chose the first bottle of wine that was \”good enough\”,I wanted to see all bottles of wine before making my choice,I considered all the bottles of wine and all of their characteristics before making my choice,I felt some regret when other bottles of wine had one or more better characteristics than my chosen bottle,Strongly disagree,Disagree,Neither disagree nor agree,Agree,Strongly Agree,I don’t know,NA,NA,NA,NA,NA,NA
