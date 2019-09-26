@@ -211,6 +211,63 @@ server <- function(input, output, session) {
   }
   
   #-----------------------------------------------------------------------------
+  # Get the choice tasks and prepare to send all choice task data to the
+  # data base
+  #-----------------------------------------------------------------------------
+  profiles <- sample(seq_len(nrow(design)), (tasks * (nalts - 1)), prob = weights)
+  choice_tasks <- design %>%
+    slice(profiles)
+  
+  # Reorder the alternatives of the choice tasks to ensure no ordering effects
+  choice_tasks <- choice_tasks %>%
+    mutate(ct_order = rep(sample(seq_len(tasks)), each = (nalts - 1)),
+      alt_order = rep(sample(seq_len((nalts - 1))), times = tasks)) %>%
+    arrange(ct_order, alt_order) %>%
+    select(-ct_order, -alt_order)
+  
+  names_attributes <- tools::toTitleCase(names(choice_tasks))
+  colnames(choice_tasks) <- names_attributes
+  
+  #-----------------------------------------------------------------------------
+  # Define the vector to store the data sent to the data base
+  #-----------------------------------------------------------------------------
+  
+  # Define the names of the attribute levels
+  attribute_names <- str_c(
+    rep(str_c("ct", seq_len(tasks), sep = "_"), each = ((nalts - 1) * nattr)),
+    rep(names(choice_tasks), times = ((nalts - 1) * tasks)),
+    rep(rep(seq_len((nalts - 1)), each = nattr), times = tasks), sep = "_"
+  )
+  
+  # Set the names of the consideration sets
+  tmp <- NULL
+  for (i in seq_len(nalts)) {
+    tmp <- c(tmp, paste("t", i, "considered", seq_len(i), sep = "_"))
+  }
+  consideration_set_names <- paste0(rep(tmp, times = tasks), "_task_",
+    rep(seq_len(tasks), each = length(tmp)))
+  
+  # Set the names of the output vector
+  survey_output_names <- c("time_zone_start", "time_start", "time_end",
+    consideration_set_names, attribute_names)
+  
+  survey_output <- rep(NA, length(survey_output_names))
+  names(survey_output) <- survey_output_names
+
+  #-----------------------------------------------------------------------------
+  # Add the attribute data to the vector of survey outputs and
+  # empty rows to the choice_tasks (i.e. opt out)
+  #-----------------------------------------------------------------------------
+  survey_output[attribute_names] <- as.vector(t(choice_tasks))
+  
+  for (i in seq_len(nalts)) {
+    row_index <- 1 + (i - 1) * nalts
+    choice_tasks <- choice_tasks %>%
+      add_row(Country = "", Color = "", Alcohol = "", Grape = "", Organic = "",
+        Price = "", .before = row_index)
+  }
+  
+  #-----------------------------------------------------------------------------
   # Define a set of reactive values. Note that we start the question counter
   # at zero to correctly index the questions when the page counter increases
   #-----------------------------------------------------------------------------
@@ -225,18 +282,6 @@ server <- function(input, output, session) {
   checked <- reactiveValues()
   battery_randomized <- reactiveVal(FALSE)
   
-  #-----------------------------------------------------------------------------
-  # Define the vector to store the data sent to the data base
-  #-----------------------------------------------------------------------------
-  tmp <- NULL
-  for (i in seq_len(nalts)) {
-    tmp <- c(tmp, paste("t", i, "considered", seq_len(i), sep = "_"))
-  }
-  consideration_set_names <- paste0(rep(tmp, times = tasks), "_task_",
-    rep(seq_len(tasks), each = length(tmp)))
-  survey_output <- rep(NA, length(consideration_set_names))
-  names(survey_output) <- consideration_set_names
-
   #-----------------------------------------------------------------------------
   # Define what happens when the session begins
   #-----------------------------------------------------------------------------
@@ -262,41 +307,6 @@ server <- function(input, output, session) {
       # save_db(survey_output, "test_db", db_config)
     }
   )
-  
-  #-----------------------------------------------------------------------------
-  # Get the choice tasks and prepare to send all choice task data to the
-  # data base
-  #-----------------------------------------------------------------------------
-  profiles <- sample(seq_len(nrow(design)), (tasks * (nalts - 1)), prob = weights)
-  choice_tasks <- design %>%
-    slice(profiles)
-  
-  # Reorder the alternatives of the choice tasks to ensure no ordering effects
-  choice_tasks <- choice_tasks %>%
-    mutate(ct_order = rep(sample(seq_len(tasks)), each = (nalts - 1)),
-           alt_order = rep(sample(seq_len((nalts - 1))), times = tasks)) %>%
-    arrange(ct_order, alt_order) %>%
-    select(-ct_order, -alt_order)
-  
-  names_attributes <- tools::toTitleCase(names(choice_tasks))
-  colnames(choice_tasks) <- names_attributes
-  
-  # Get the data ready to submit to the database
-  data_attributes <- as.vector(t(choice_tasks))
-  names(data_attributes) <- str_c(
-    rep(str_c("ct", seq_len(tasks), sep = "_"), each = ((nalts - 1) * nattr)),
-    rep(names(choice_tasks), times = ((nalts - 1) * tasks)),
-    rep(rep(seq_len((nalts - 1)), each = nattr), times = tasks), sep = "_"
-  )
-  
-  # Add empty rows to the choice tasks, i.e. 
-  # row_index <- seq(1, ((nalts - 1) * tasks), nalts)
-  for (i in seq_len(nalts)) {
-    row_index <- 1 + (i - 1) * nalts
-    choice_tasks <- choice_tasks %>%
-      add_row(Country = "", Color = "", Alcohol = "", Grape = "", Organic = "",
-        Price = "", .before = row_index)
-  }
   
   #-----------------------------------------------------------------------------
   # Get the possible responses to each question
