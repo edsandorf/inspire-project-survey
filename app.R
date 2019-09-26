@@ -91,55 +91,10 @@ ui <- fluidPage(theme = "master.css",
 #-------------------------------------------------------------------------------
 server <- function(input, output, session) {
   #-----------------------------------------------------------------------------
-  # Define a set of reactive values. Note that we start the question counter
-  # at zero to correctly index the questions when the page counter increases
-  #-----------------------------------------------------------------------------
-  current <- reactiveValues(
-    page = 1, 
-    alt = 1, 
-    question = 0,
-    time = 1000,
-    task = 0
-  )
-  
-  checked <- reactiveValues()
-  battery_randomized <- reactiveVal(FALSE)
-  
-  #-----------------------------------------------------------------------------
-  # Define what happens when the session begins
-  #-----------------------------------------------------------------------------
-  
-  url_vars <- NULL
-  observe({
-    url_vars <<- parseQueryString(session$clientData$url_search)
-  })
-  
-
-  # Generate a survey specific ID number
-  resp_id <- paste0(sample(c(letters, LETTERS, 0:9), 10), collapse = "")
-  output$resp_id <- renderText(resp_id)
-  
-  # Add exit URL
-  exit_url <- paste0("https://inspire-project.info/?id=", resp_id, "&?test=", 8)
-  
-  #-----------------------------------------------------------------------------
-  # Define what happens when the session ends
-  #-----------------------------------------------------------------------------
-  session$onSessionEnded(
-    function () {
-      time_end <- Sys.time()
-      # save_db(survey_output, "test_db", db_config)
-    }
-  )
-  
-  #-----------------------------------------------------------------------------
   # Define treatments and randomly allocate respondents
   #-----------------------------------------------------------------------------
-  # treatment <- 6
-  treatment <- sample(1:10, 1)
-  
-  # Enforce that your chosen alt has to be among your most preferred. 
-  # Add popup if this is not the case. 
+  treatment <- 6
+  # treatment <- sample(1:10, 1)
   
   # Standard choice task with 3 alternatives
   if (treatment == 1) {
@@ -246,14 +201,67 @@ server <- function(input, output, session) {
   
   if (treatment %in% c(8, 9, 10)) {
     names(time_delay) <- paste0("time_delay_task_",
-                                rep(seq_len(tasks), each = nalts),
-                                "_alt_",
-                                rep(seq_len(nalts), times = tasks))
+      rep(seq_len(tasks), each = nalts),
+      "_alt_",
+      rep(seq_len(nalts), times = tasks))
     
     # Initiate the reactive values for the timer and active
     timer <- reactiveVal(time_delay[1])
     active <- reactiveVal(TRUE)
   }
+  
+  #-----------------------------------------------------------------------------
+  # Define a set of reactive values. Note that we start the question counter
+  # at zero to correctly index the questions when the page counter increases
+  #-----------------------------------------------------------------------------
+  current <- reactiveValues(
+    page = 1, 
+    alt = 1, 
+    question = 0,
+    time = 1000,
+    task = 0
+  )
+  
+  checked <- reactiveValues()
+  battery_randomized <- reactiveVal(FALSE)
+  
+  #-----------------------------------------------------------------------------
+  # Define the vector to store the data sent to the data base
+  #-----------------------------------------------------------------------------
+  tmp <- NULL
+  for (i in seq_len(nalts)) {
+    tmp <- c(tmp, paste("t", i, "considered", seq_len(i), sep = "_"))
+  }
+  consideration_set_names <- paste0(rep(tmp, times = tasks), "_task_",
+    rep(seq_len(tasks), each = length(tmp)))
+  survey_output <- rep(NA, length(consideration_set_names))
+  names(survey_output) <- consideration_set_names
+
+  #-----------------------------------------------------------------------------
+  # Define what happens when the session begins
+  #-----------------------------------------------------------------------------
+  url_vars <- NULL
+  observe({
+    url_vars <<- parseQueryString(session$clientData$url_search)
+  })
+  
+  # Generate a survey specific ID number
+  resp_id <- paste0(sample(c(letters, LETTERS, 0:9), 10), collapse = "")
+  output$resp_id <- renderText(resp_id)
+  
+  # Add exit URL
+  exit_url <- paste0("https://inspire-project.info/?id=", resp_id, "&?test=", 8)
+  
+  #-----------------------------------------------------------------------------
+  # Define what happens when the session ends
+  #-----------------------------------------------------------------------------
+  session$onSessionEnded(
+    function () {
+      time_end <- Sys.time()
+      write.csv(survey_output, "test.csv")
+      # save_db(survey_output, "test_db", db_config)
+    }
+  )
   
   #-----------------------------------------------------------------------------
   # Get the choice tasks and prepare to send all choice task data to the
@@ -366,13 +374,16 @@ server <- function(input, output, session) {
     
     # Get the checked values at each click of the next page button
     if (current_best || consideration_set || consideration_set_all) {
-      checkbox_names <- paste("considered", current$task, seq_len(current$alt), sep = "_")
+      checkbox_names <- paste("considered", seq_len(current$alt), "task", current$task, sep = "_")
       checked_values <- vapply(checkbox_names, function (x) {
         isTRUE(input[[x]])
       }, logical(1))
       for (i in seq_along(checked_values)) {
         checked[[paste0("alt_", i)]] <- ifelse(isTRUE(checked_values[i]), "checked", "")
       }
+      
+      # Store the consideration sets
+      survey_output[paste("t", current$alt, checkbox_names, sep = "_")] <<- checked_values
     }
     
     # Manually trigger unbind-DT when the next alternative button is clicked
@@ -531,7 +542,7 @@ server <- function(input, output, session) {
               for (i in seq_len(current$alt)) {
                 checkboxes[i, ] <- sprintf('<input type = "checkbox" value = "%s" id = "%s" %s/>',
                                            i,
-                                           paste("considered", current$task, i, sep = "_"),
+                                           paste("considered", i, "task", current$task, sep = "_"),
                                            checked[[paste0("alt_", i)]])
               }
               names_tmp <- colnames(task_matrix)
@@ -795,7 +806,7 @@ server <- function(input, output, session) {
           
           # Set the current_best and consideration_set observers
           if (current_best || consideration_set || consideration_set_all) {
-            checkbox_names <- paste("considered", current$task, seq_len(current$alt), sep = "_")
+            checkbox_names <- paste("considered", seq_len(current$alt), "task", current$task, sep = "_")
             checked <- vapply(checkbox_names, function (x) {
               isTRUE(input[[x]])
             }, logical(1))
