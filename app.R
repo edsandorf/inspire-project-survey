@@ -647,16 +647,10 @@ server <- function(input, output, session) {
   #-----------------------------------------------------------------------------
   observeEvent(current$time, {
     output$time_left <- renderText({
-      "The next alternative can be revealed in: "
-    })
-    
-    shinyjs::delay(current$time, {
-      output$time_left <- renderText({
-        left_on_timer <- as.character(current$time / 1000)
-        if (nchar(left_on_timer) == 1) left_on_timer <- paste0(left_on_timer, ".")
-        paste0("The next alternative can be revealed in: ", 
-          stringr::str_pad(left_on_timer, 4, "right", "0"), "s")
-      })
+      left_on_timer <- as.character(current$time / 1000)
+      if (nchar(left_on_timer) == 1) left_on_timer <- paste0(left_on_timer, ".")
+      paste0("The next alternative can be revealed in: ", 
+        stringr::str_pad(left_on_timer, 4, "right", "0"), "s")
     })
   })
   
