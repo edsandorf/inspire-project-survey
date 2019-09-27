@@ -93,7 +93,7 @@ server <- function(input, output, session) {
   #-----------------------------------------------------------------------------
   # Define treatments and randomly allocate respondents
   #-----------------------------------------------------------------------------
-  treatment <- 6
+  treatment <- 10
   # treatment <- sample(1:10, 1)
   
   # Standard choice task with 3 alternatives
@@ -185,7 +185,7 @@ server <- function(input, output, session) {
     consideration_set <- FALSE
     consideration_set_all <- FALSE
     search_cost <- TRUE
-    time_delay <- rep(sample(seq(0, 3000, 250), tasks, replace = TRUE), each = nalts)
+    time_delay <- rep(sample(seq(0, 5000, 250), tasks, replace = TRUE), each = nalts)
   }
   
   # Sequential choice tasks with variable time cost across alts and tasks
@@ -196,18 +196,7 @@ server <- function(input, output, session) {
     consideration_set <- FALSE
     consideration_set_all <- FALSE
     search_cost <- TRUE
-    time_delay <- sample(seq(0, 3000, 250), tasks * nalts, replace = TRUE)
-  }
-  
-  if (treatment %in% c(8, 9, 10)) {
-    names(time_delay) <- paste0("time_delay_task_",
-      rep(seq_len(tasks), each = nalts),
-      "_alt_",
-      rep(seq_len(nalts), times = tasks))
-    
-    # Initiate the reactive values for the timer and active
-    timer <- reactiveVal(time_delay[1])
-    active <- reactiveVal(TRUE)
+    time_delay <- sample(seq(0, 5000, 250), tasks * nalts, replace = TRUE)
   }
   
   #-----------------------------------------------------------------------------
@@ -231,26 +220,32 @@ server <- function(input, output, session) {
   #-----------------------------------------------------------------------------
   # Define the vector to store the data sent to the data base
   #-----------------------------------------------------------------------------
-  
-  # Define the names of the attribute levels
-  attribute_names <- str_c(
+  # Define the names of the attributes
+  names_attributes <- str_c(
     rep(str_c("ct", seq_len(tasks), sep = "_"), each = ((nalts - 1) * nattr)),
     rep(names(choice_tasks), times = ((nalts - 1) * tasks)),
     rep(rep(seq_len((nalts - 1)), each = nattr), times = tasks), sep = "_"
   )
   
-  # Set the names of the consideration sets
+  # Define the names of the consideration sets
   tmp <- NULL
   for (i in seq_len(nalts)) {
     tmp <- c(tmp, paste("t", i, "considered", seq_len(i), sep = "_"))
   }
-  consideration_set_names <- paste0(rep(tmp, times = tasks), "_task_",
+  names_consideration_sets <- paste0(rep(tmp, times = tasks), "_task_",
     rep(seq_len(tasks), each = length(tmp)))
+  
+  # Define the names of the time delay
+  names_time_delay <- paste0("time_delay_task_",
+    rep(seq_len(tasks), each = nalts),
+    "_alt_",
+    rep(seq_len(nalts), times = tasks))
   
   # Set the names of the output vector
   survey_output_names <- c("time_zone_start", "time_start", "time_end",
-    consideration_set_names, attribute_names)
+    names_consideration_sets, names_attributes, names_time_delay)
   
+  # Create the survey output vector to be only NA
   survey_output <- rep(NA, length(survey_output_names))
   names(survey_output) <- survey_output_names
 
@@ -258,13 +253,20 @@ server <- function(input, output, session) {
   # Add the attribute data to the vector of survey outputs and
   # empty rows to the choice_tasks (i.e. opt out)
   #-----------------------------------------------------------------------------
-  survey_output[attribute_names] <- as.vector(t(choice_tasks))
+  survey_output[names_attributes] <- as.vector(t(choice_tasks))
   
   for (i in seq_len(nalts)) {
     row_index <- 1 + (i - 1) * nalts
     choice_tasks <- choice_tasks %>%
       add_row(Country = "", Color = "", Alcohol = "", Grape = "", Organic = "",
         Price = "", .before = row_index)
+  }
+  
+  #-----------------------------------------------------------------------------
+  # Add the time_delay data to the output vector
+  #-----------------------------------------------------------------------------
+  if (treatment %in% c(8, 9, 10)) {
+    survey_output[names_time_delay] <- time_delay
   }
   
   #-----------------------------------------------------------------------------
@@ -281,6 +283,12 @@ server <- function(input, output, session) {
   
   checked <- reactiveValues()
   battery_randomized <- reactiveVal(FALSE)
+  
+  if (treatment %in% c(8, 9, 10)) {
+    # Initiate the reactive values for the timer and active
+    timer <- reactiveVal(time_delay[1])
+    active <- reactiveVal(TRUE)
+  }
   
   #-----------------------------------------------------------------------------
   # Define what happens when the session begins
@@ -387,7 +395,14 @@ server <- function(input, output, session) {
       
       if (question_type == "battery_randomized") {
         battery_randomized(TRUE)
-      } 
+      }
+      
+      # Update the reactive value for the time_index
+      if (search_cost) {
+        current$time <- as.integer(time_delay[(current$task - 1) * nalts + current$alt])
+        timer(current$time)
+        active(TRUE)
+      }
     }
   })
   
@@ -397,13 +412,6 @@ server <- function(input, output, session) {
   observeEvent(input[["next_alt"]], {
     # Get the response_id
     response_id <- paste0("response_", current$question)
-    
-    # Update the reactive value for the time_index
-    if (search_cost) {
-      current$time <- as.integer(time_delay[(current$task - 1) * nalts + current$alt])
-      timer(current$time)
-      active(TRUE)
-    }
     
     # Get the checked values at each click of the next page button
     if (current_best || consideration_set || consideration_set_all) {
@@ -434,6 +442,12 @@ server <- function(input, output, session) {
       current$alt <- current$alt + 1
     }
     
+    # Update the reactive value for the time_index
+    if (search_cost) {
+      current$time <- as.integer(time_delay[(current$task - 1) * nalts + current$alt])
+      timer(current$time)
+      active(TRUE)
+    }
   })
   
   #-----------------------------------------------------------------------------
@@ -624,17 +638,27 @@ server <- function(input, output, session) {
               ))
             )
           ) # End renderDT
-          
-          # Define the renderText() for the count down timer.
-          output$time_left <- renderText({
-            left_on_timer <- as.character(timer() / 1000)
-            if (nchar(left_on_timer) == 1) left_on_timer <- paste0(left_on_timer, ".")
-            paste0("Time left until you can reveal another alternative: ",
-                   stringr::str_pad(left_on_timer, 4, "right", "0"), "s")
-          })
         }
       })
     })
+  
+  #-----------------------------------------------------------------------------
+  # What happens when the time left changes
+  #-----------------------------------------------------------------------------
+  observeEvent(current$time, {
+    output$time_left <- renderText({
+      "The next alternative can be revealed in: "
+    })
+    
+    shinyjs::delay(current$time, {
+      output$time_left <- renderText({
+        left_on_timer <- as.character(current$time / 1000)
+        if (nchar(left_on_timer) == 1) left_on_timer <- paste0(left_on_timer, ".")
+        paste0("The next alternative can be revealed in: ", 
+          stringr::str_pad(left_on_timer, 4, "right", "0"), "s")
+      })
+    })
+  })
   
   #-----------------------------------------------------------------------------
   # When the page counter increases, store the current responses to the 
@@ -660,7 +684,7 @@ server <- function(input, output, session) {
     # JS for buttons
     shinyjs::hideElement("next_alt")
     shinyjs::hideElement("download_info_bttn")
-    
+  
     if (page_type == "first_page") {
       return(
         shiny::withTags(
@@ -877,8 +901,6 @@ server <- function(input, output, session) {
             consideration_check <- TRUE
           } # End of if (current_best || consideration_set)
           
-          shinyjs::reset(response_id)
-          
           # Check whether (all) questions are answered
           toggle_condition <- length(input[[response_id]]) > 0 && consideration_check
           
@@ -889,21 +911,6 @@ server <- function(input, output, session) {
         
         shinyjs::toggleState("next_page", condition = toggle_condition)
       }) # End JS and output observer
-      
-      # Set up a second observer for the count down timer
-      observe({
-        if (search_cost && question_type == "choice_task") {
-          invalidateLater(time_inc, session)
-          isolate({
-            if (active()) {
-              timer(timer() - time_inc)
-              if (timer() < time_inc) {
-                active(FALSE)
-              }
-            }
-          })
-        }
-      }) #  End time observer
       
       # Render the question
       return(
