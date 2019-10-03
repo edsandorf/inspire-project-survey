@@ -55,7 +55,7 @@ ui <- fluidPage(theme = "master.css",
                       uiOutput("user_interface"),
                       # Button to reveal the next alternative
                       shinyWidgets::actionBttn(inputId = "next_alt",
-                                               label = "Reveal another alternative",
+                                               label = "See another bottle of wine",
                                                style = "material-flat",
                                                color = "success"),
                       
@@ -93,7 +93,7 @@ server <- function(input, output, session) {
   #-----------------------------------------------------------------------------
   # Define treatments and randomly allocate respondents
   #-----------------------------------------------------------------------------
-  treatment <- 10
+  treatment <- 6
   # treatment <- sample(1:10, 1)
   
   # Standard choice task with 3 alternatives
@@ -214,9 +214,6 @@ server <- function(input, output, session) {
     arrange(ct_order, alt_order) %>%
     select(-ct_order, -alt_order)
   
-  names_attributes <- tools::toTitleCase(names(choice_tasks))
-  colnames(choice_tasks) <- names_attributes
-  
   #-----------------------------------------------------------------------------
   # Define the vector to store the data sent to the data base
   #-----------------------------------------------------------------------------
@@ -258,9 +255,14 @@ server <- function(input, output, session) {
   for (i in seq_len(nalts)) {
     row_index <- 1 + (i - 1) * nalts
     choice_tasks <- choice_tasks %>%
-      add_row(Country = "", Color = "", Alcohol = "", Grape = "", Organic = "",
-        Price = "", .before = row_index)
+      add_row(country = "", color = "", alcohol = "", grape = "",
+        characteristic = "", organic = "", price = "", .before = row_index)
   }
+  
+  # Update attribute names for display
+  names_attributes <- c("Country of origin", "Colour", "Alcohol by volume",
+    "Grape variety", "Characteristic", "Organic", "Price")
+  colnames(choice_tasks) <- names_attributes
   
   #-----------------------------------------------------------------------------
   # Add the time_delay data to the output vector
@@ -594,7 +596,11 @@ server <- function(input, output, session) {
               }
               names_tmp <- colnames(task_matrix)
               task_matrix <- cbind(task_matrix, checkboxes)
-              colnames(task_matrix) <- c(names_tmp, "I actively consider")
+              if (current_best) {
+                colnames(task_matrix) <- c(names_tmp, "I am considering this option")
+              } else {
+                colnames(task_matrix) <- c(names_tmp, "I am considering these options")
+              }
             }
             
             # Add the choice response
@@ -610,10 +616,10 @@ server <- function(input, output, session) {
             task_matrix <- cbind(task_matrix, radio_choice)
             colnames(task_matrix) <- c(names_tmp, "I choose")
             if (current$alt == 1) {
-              rownames(task_matrix) <- paste0("None of these wines")
+              rownames(task_matrix) <- paste0("I would not buy wine for this occasion")
             } else {
-              rownames(task_matrix) <- c(paste0("None of these wines"), 
-                paste0("Wine ", seq_len(current$alt - 1)))
+              rownames(task_matrix) <- c(paste0("I would not buy any of these wines for this occasion"), 
+                paste0("Bottle ", seq_len(current$alt - 1)))
             }
             
             # Return the matrix
@@ -808,12 +814,30 @@ server <- function(input, output, session) {
       return(
         shiny::withTags(
           div(
-            h1("Section 2: Your stated purchases of wine"),
-            p("[INSERT VIDEOS HERE DPENDING ON THE TREATMENT]")
+            h1("Section 2: A stated choice experiment about wine"),
+            p("In this section you will be asked to make several choices between different bottles of wine. Each bottle you are presented with is described by seven attributes. Please treat each choice occasion as if it is a real choice. Remember, if you choose to buy a bottle of wine, you will have less money to spend on other things."),
+            p("The", b("country of origin"), "specifies the country where the wine was produced."),
+            p("The", b("colour"), "describes the type of wine."),
+            p("The", b("alcohol by volume"), "specifies the percentage of alcohol in the bottle of wine."),
+            p("The", b("grape variety"), "specifies the grape used in the making of the wine."),
+            p("For red wines, the", b("characteristic"), "is indicated on a 5 point scale where 1 is light bodied and 5 is full bodied. For white and rosé wines, the", b("characteristic"), "is indicated on a 5 point scale where 1 is dry and 5 is sweet."),
+            p(b("Organic"), "specifies whether the wine is organic or not."),
+            p("The", b("price"), "tells you the price per 75cl bottle of wine in pounds.")
           )
         )
       )
     } # End section 2 info page
+    
+    if (page_type == "video_instruction") {
+      return(
+        shiny::withTags(
+          div(
+            h3("Here we show a video describing how to indicate your choice in each choice occasion. The video will take less than one minute. Please watch the video carefully."),
+            p("[INSERT VIDEOS HERE DPENDING ON THE TREATMENT]")
+          )
+        )
+      )
+    } # End video information page
     
     if (page_type == "question") {
       if (question_type == "choice_task") {
@@ -917,6 +941,7 @@ server <- function(input, output, session) {
             if (question_type == "likert" || question_type == "dropdown" || question_type == "text" || question_type == "checkbox") {
               div(uiOutput(response_id))
             },
+            p(""),
             if (search_cost && question_type == "choice_task") {
               textOutput("time_left")
             },
