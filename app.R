@@ -241,8 +241,15 @@ server <- function(input, output, session) {
   # Define the names of the time on each page
   names_time_page <- paste0("time_end_page_", seq_len(pages))
   
+  # Define the names of the time on each alt
+  names_alt_times <- paste0("time_end_task_",
+    rep(seq_len(tasks), each = nalts),
+    "_alt_",
+    rep(seq_len(nalts), times = tasks))
+  
   # Set the names of the output vector
-  survey_output_names <- c("time_zone_start", "time_start", names_time_page, "time_end",
+  survey_output_names <- c("time_zone_start", "time_start", names_time_page,
+    "time_end", names_alt_times,
     names_consideration_sets, names_attributes, names_time_delay)
   
   # Create the survey output vector to be only NA
@@ -314,9 +321,6 @@ server <- function(input, output, session) {
   
   # Add exit URL
   exit_url <- paste0("https://inspire-project.info/?id=", resp_id, "&?test=", 8)
-  
-  # Store the time when the survey starts
-  
   
   #-----------------------------------------------------------------------------
   # Define what happens when the session ends
@@ -427,6 +431,11 @@ server <- function(input, output, session) {
   # When the 'next_alternative' button is clicked, increase the 'alt' counter
   #-----------------------------------------------------------------------------
   observeEvent(input[["next_alt"]], {
+    # Get the response time at the current task and alt
+    if (sequential) {
+      survey_output[paste0("time_end_task_", current$task, "_alt_", current$alt)] <<- Sys.time()
+    }
+    
     # Get the response_id
     response_id <- paste0("response_", current$question)
     
