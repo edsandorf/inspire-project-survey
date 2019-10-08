@@ -980,6 +980,17 @@ server <- function(input, output, session) {
       )
     } # End question page
     
+    if (page_type == "section_3") {
+      return(
+        shiny::withTags(
+          div(
+            h3("Section 3: Socio-demographics"),
+            p("In this section, you will be asked a series of questions about your ... ")
+          )
+        )
+      )
+    } # End video information page
+    
     if (page_type == "final_page") {
       # Hide the 'next_page' button
       shinyjs::hideElement("next_page")
