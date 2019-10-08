@@ -238,8 +238,11 @@ server <- function(input, output, session) {
     "_alt_",
     rep(seq_len(nalts), times = tasks))
   
+  # Define the names of the time on each page
+  names_time_page <- paste0("time_end_page_", seq_len(pages))
+  
   # Set the names of the output vector
-  survey_output_names <- c("time_zone_start", "time_start", "time_end",
+  survey_output_names <- c("time_zone_start", "time_start", names_time_page, "time_end",
     names_consideration_sets, names_attributes, names_time_delay)
   
   # Create the survey output vector to be only NA
@@ -295,6 +298,11 @@ server <- function(input, output, session) {
   #-----------------------------------------------------------------------------
   # Define what happens when the session begins
   #-----------------------------------------------------------------------------
+  # Add time start to the output vector
+  survey_output["time_start"] <- Sys.time()
+  survey_output["time_zone_start"] <- Sys.timezone()
+  
+  # Grab the variables passe through the URL
   url_vars <- NULL
   observe({
     url_vars <<- parseQueryString(session$clientData$url_search)
@@ -307,12 +315,16 @@ server <- function(input, output, session) {
   # Add exit URL
   exit_url <- paste0("https://inspire-project.info/?id=", resp_id, "&?test=", 8)
   
+  # Store the time when the survey starts
+  
+  
   #-----------------------------------------------------------------------------
   # Define what happens when the session ends
   #-----------------------------------------------------------------------------
   session$onSessionEnded(
     function () {
-      time_end <- Sys.time()
+      # Add time end to the output vector
+      survey_output["time_end"] <- Sys.time()
       write.csv(survey_output, "test.csv")
       # save_db(survey_output, "test_db", db_config)
     }
@@ -351,6 +363,9 @@ server <- function(input, output, session) {
   # counters, and reset the alt counter.
   #-----------------------------------------------------------------------------
   observeEvent(input[["next_page"]], {
+    # Store the time spent on the page
+    survey_output[paste0("time_end_page_", current$page)] <<- Sys.time()
+    
     # Get the checked values at each click of the next page button
     if (current_best || consideration_set || consideration_set_all) {
       checkbox_names <- paste("considered", seq_len(current$alt), "task", current$task, sep = "_")
