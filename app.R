@@ -527,6 +527,14 @@ server <- function(input, output, session) {
         })
       } # End question type text
       
+      # Render a rank list question
+      if (question_type == "rank_list") {
+        output[[response_id]] <- renderUI({
+          sortable::rank_list(labels = c(responses()),
+            input_id = response_id)
+        })
+      } # End rank list question
+      
       # Render a checkbox question
       if (question_type == "checkbox") {
         output[[response_id]] <- renderUI({
@@ -873,7 +881,7 @@ server <- function(input, output, session) {
       
       # Toggle conditions and output observer
       observe({
-        if (question_type == "likert" || question_type == "checkbox") {
+        if (question_type == "likert" || question_type == "checkbox" || question_type == "rank_list") {
           # Check whether (all) questions are answered
           toggle_condition <- length(input[[response_id]]) > 0
           
@@ -962,7 +970,8 @@ server <- function(input, output, session) {
             if (question_type == "battery" || question_type == "battery_randomized" || question_type == "choice_task") {
               div(DT::dataTableOutput(response_id))
             },
-            if (question_type == "likert" || question_type == "dropdown" || question_type == "text" || question_type == "checkbox") {
+            if (question_type == "likert" || question_type == "dropdown" || question_type == "text" || question_type == "checkbox" ||
+              question_type == "rank_list") {
               div(uiOutput(response_id))
             },
             p(""),

@@ -2,7 +2,7 @@
 # Load packages
 #-------------------------------------------------------------------------------
 pkgs <- c("stringr", "shiny", "shinyjs", "shinyWidgets", "DT",
-          "RMariaDB", "config", "dplyr")
+          "RMariaDB", "config", "dplyr", "sortable")
 invisible(lapply(pkgs, require, character.only = TRUE))
 
 #-------------------------------------------------------------------------------
