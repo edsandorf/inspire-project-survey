@@ -535,6 +535,27 @@ server <- function(input, output, session) {
         })
       } # End rank list question
       
+      # Add bucket list question
+      if (question_type == "bucket_list") {
+        output[[response_id]] <- renderUI({
+          sortable::bucket_list(
+            header = "",
+            group_name = response_id,
+            orientation = "horizontal",
+            sortable::add_rank_list(
+              text = "Available options",
+              labels = c(responses()),
+              input_id = "not_ranked"
+            ),
+            sortable::add_rank_list(
+              text = "My ranking",
+              labels = NULL,
+              input_id = "ranked"
+            )
+          )
+        })
+      } # End bucket list question
+      
       # Render a checkbox question
       if (question_type == "checkbox") {
         output[[response_id]] <- renderUI({
@@ -890,6 +911,15 @@ server <- function(input, output, session) {
           })
         } # End Likert scale or checkbox question
         
+        if (question_type == "bucket_list") {
+          toggle_condition <- length(input[[response_id]][["ranked"]] > 0)
+          # toggle_condition <- TRUE
+          
+          output[["check"]] <- renderPrint({
+            input[[response_id]]
+          })
+        } # End bucket_list question
+        
         if (question_type == "dropdown" || question_type == "text") {
           # Check whether (all) questions are answered
           toggle_condition <- input[[response_id]] != ""
@@ -971,7 +1001,7 @@ server <- function(input, output, session) {
               div(DT::dataTableOutput(response_id))
             },
             if (question_type == "likert" || question_type == "dropdown" || question_type == "text" || question_type == "checkbox" ||
-              question_type == "rank_list") {
+              question_type == "rank_list" || question_type == "bucket_list") {
               div(uiOutput(response_id))
             },
             p(""),
