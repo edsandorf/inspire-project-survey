@@ -833,6 +833,11 @@ server <- function(input, output, session) {
         
         toggle_condition <- all(ticked)
         
+        # Turn off mandatory checks for response when not in production
+        if (!production) {
+          toggle_condition <- TRUE
+        }
+        
         shinyjs::toggleState(id = "next_page", condition = toggle_condition)
       })
       
@@ -906,6 +911,11 @@ server <- function(input, output, session) {
           # Check whether (all) questions are answered
           toggle_condition <- length(input[[response_id]]) > 0
           
+          # Turn off mandatory checks for response when not in production
+          if (!production) {
+            toggle_condition <- TRUE
+          }
+          
           output[["check"]] <- renderPrint({
             str(input[[response_id]])
           })
@@ -913,7 +923,11 @@ server <- function(input, output, session) {
         
         if (question_type == "bucket_list") {
           toggle_condition <- length(input[[response_id]][["ranked"]] > 0)
-          # toggle_condition <- TRUE
+          
+          # Turn off mandatory checks for response when not in production
+          if (!production) {
+            toggle_condition <- TRUE
+          }
           
           output[["check"]] <- renderPrint({
             input[[response_id]]
@@ -923,6 +937,11 @@ server <- function(input, output, session) {
         if (question_type == "dropdown" || question_type == "text") {
           # Check whether (all) questions are answered
           toggle_condition <- input[[response_id]] != ""
+          
+          # Turn off mandatory checks for response when not in production
+          if (!production) {
+            toggle_condition <- TRUE
+          }
           
           output[["check"]] <- renderPrint({
             str(input[[response_id]])
@@ -935,6 +954,11 @@ server <- function(input, output, session) {
             length(input[[x]]) > 0
           }, logical(1))
           toggle_condition <- all(filled)
+          
+          # Turn off mandatory checks for response when not in production
+          if (!production) {
+            toggle_condition <- TRUE
+          }
           
           # Check the output
           output[["check"]] <- renderPrint(
@@ -983,6 +1007,11 @@ server <- function(input, output, session) {
           
           # Check whether (all) questions are answered
           toggle_condition <- length(input[[response_id]]) > 0 && consideration_check
+          
+          # Turn off mandatory checks for response when not in production
+          if (!production) {
+            toggle_condition <- TRUE
+          }
           
           output[["check"]] <- renderPrint({
             str(input[[response_id]])
