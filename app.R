@@ -356,10 +356,28 @@ server <- function(input, output, session) {
       unlist(., use.names = FALSE)
 
     if (battery_randomized()) {
-      tmp <- sample(tmp, length(tmp))
+      tmp <- tmp[order(randomized_order())]
     }
     
     return(tmp)
+  })
+  
+  #-----------------------------------------------------------------------------
+  # Set the vector used to randomize the questions
+  #-----------------------------------------------------------------------------
+  randomized_order <- reactive({
+    if (battery_randomized()) {
+      sample(
+        seq_len(
+          outline %>%
+            slice(current$page) %>%
+            select(starts_with("battery")) %>%
+            select_if(not_all_na) %>%
+            unlist(., use.names = FALSE) %>%
+            length
+        )
+      )
+    } 
   })
   
   #-----------------------------------------------------------------------------
@@ -367,6 +385,12 @@ server <- function(input, output, session) {
   # counters, and reset the alt counter.
   #-----------------------------------------------------------------------------
   observeEvent(input[["next_page"]], {
+    # Get the page_type and question_tyep
+    page_type <- dplyr::pull(outline, page_type)[current$page]
+    question_type <- dplyr::pull(outline, question_type)[current$page]
+    question_id <- dplyr::pull(outline, question_id)[current$page]
+    response_id <- paste0("response_", current$question)
+    
     # Store the time spent on the page
     survey_output[paste0("time_end_page_", current$page)] <<- Sys.time()
     
