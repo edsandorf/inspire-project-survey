@@ -75,10 +75,14 @@ body {
   padding-top: 20px;
 }
 
+.default-sortable .rank-list-item:hover:not(.disabled) {
+  background-color: #85cc94;
+}
+
 /*  FUNDER PANEL */
 .funder-panel {
     margin: 20px;
-    border: 1px solid #000207;
+    /*border: 1px solid #000207;*/
     background-color: #28a745;
 }
 
