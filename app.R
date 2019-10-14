@@ -68,12 +68,10 @@ ui <- fluidPage(theme = "master.css",
       ),
       
       fluidRow(class = "panel-next-page",
-        column(1),
         column(8),
-        column(1, 
-          shinyWidgets::actionBttn(inputId = "next_page", label = "NULL",
-            style = "material-circle", color = "success",
-            icon = icon("arrow-right"))
+        column(3, 
+          shinyWidgets::actionBttn(inputId = "next_page", label = "Continue to next page",
+            style = "material-flat", color = "success")
         ),
         column(1)
       ),
@@ -860,6 +858,9 @@ server <- function(input, output, session) {
     text_id <- paste0("text_", current$question)
     response_id <- paste0("response_", current$question)
     
+    # Check button text
+    updateActionButton(session, inputId = "next_page", label = "Continue to next page")
+    
     # JS for buttons
     shinyjs::hideElement("next_alt")
     shinyjs::hideElement("download_info_bttn")
@@ -946,6 +947,9 @@ server <- function(input, output, session) {
     } # End participant information page
     
     if (page_type == "consent_page") {
+      # Update the action button
+      updateActionButton(session, inputId = "next_page", label = "I consent to the above")
+      
       # Define the mandatory consent fields
       mandatory <- c("consent_item_one", "consent_item_two", "consent_item_three",
                      "consent_item_four", "consent_item_five", "consent_item_six")
@@ -1032,6 +1036,8 @@ server <- function(input, output, session) {
     } # End video information page
     
     if (page_type == "question") {
+      updateActionButton(session, inputId = "next_page", label = "Continue to next question")
+      
       if (question_type == "choice_task") {
         # Show the next_alt button if we are in a sequential treatment
         if (sequential) {
