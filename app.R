@@ -35,46 +35,48 @@ ui <- fluidPage(theme = "master.css",
   # Wrap the rest of the visible user interface in the hidden() environment
   shinyjs::hidden(
     div(id = "survey",
-        
+      
       # Title page
       fluidRow(class = "top-panel",
-               column(8),
-               column(4,
-                      img(src = "mono-reverse-logo.png", class = "funder-panel-image", style = "border:0;"))
+        column(8,
+          uiOutput("resp_id")),
+        column(4,
+          img(src = "mono-reverse-logo.png", class = "funder-panel-image", style = "border:0;"))
       ),
       
       # Progress bar
       fluidRow(class = "progress-bar-panel",
-               shinyWidgets::progressBar(id = "progress_bar", value = 0, range_value = c(0, (pages - 1)), display_pct = FALSE, title = NULL, striped = TRUE, status = "success")
+        shinyWidgets::progressBar(id = "progress_bar", value = 0, range_value = c(0, (pages - 1)), display_pct = FALSE, title = NULL, striped = TRUE, status = "success")
       ),
       
       # Main survey panel
       fluidRow(class = "panel-main",
-               column(1),
-               column(10,
-                      uiOutput("user_interface"),
-                      # Button to reveal the next alternative
-                      shinyWidgets::actionBttn(inputId = "next_alt",
-                                               label = "See another bottle of wine",
-                                               style = "material-flat",
-                                               color = "success"),
-                      
-                      # Downlaod buttton for participant information sheet
-                      shinyWidgets::downloadBttn(outputId = "download_info",
-                                                 label = "Click to download a copy of the participant information sheet",
-                                                 style = "material-flat", color = "success")
-               ),
-               column(1)
+        column(1),
+        column(10,
+          uiOutput("user_interface"),
+          # Button to reveal the next alternative
+          shinyWidgets::actionBttn(inputId = "next_alt",
+            label = "See another bottle of wine",
+            style = "material-flat",
+            color = "success"),
+          
+          # Downlaod buttton for participant information sheet
+          shinyWidgets::downloadBttn(outputId = "download_info",
+            label = "Click to download a copy of the participant information sheet",
+            style = "material-flat", color = "success")
+        ),
+        column(1)
       ),
       
       fluidRow(class = "panel-next-page",
-               column(9),
-               column(1, 
-                      shinyWidgets::actionBttn(inputId = "next_page", label = "NULL",
-                                               style = "material-circle", color = "success",
-                                               icon = icon("arrow-right"))
-               ),
-               column(1)
+        column(1),
+        column(8),
+        column(1, 
+          shinyWidgets::actionBttn(inputId = "next_page", label = "NULL",
+            style = "material-circle", color = "success",
+            icon = icon("arrow-right"))
+        ),
+        column(1)
       )
     )
   )
@@ -370,7 +372,9 @@ server <- function(input, output, session) {
   
   # Generate a survey specific ID number
   resp_id <- paste0(sample(c(letters, LETTERS, 0:9), 10), collapse = "")
-  output$resp_id <- renderText(resp_id)
+  output$resp_id <- renderUI({
+    paste0("Your unique respondent ID is: ", resp_id)
+  })
   
   # Add exit URL
   exit_url <- paste0("https://inspire-project.info/?id=", resp_id, "&?test=", 8)
@@ -862,6 +866,9 @@ server <- function(input, output, session) {
         shiny::withTags(
           div(
             h1("Welcome"),
+            p("Thank you for your interest in this study."),
+            p("We are inviting you to take part in a research project that explores how people make decisions"),
+            p("On the next page, you will receive more information about the project and the survey. Please read the information carefully before proceeding"),
             p(paste0("You are in treatment: ", treatment))
           )
         )
@@ -883,9 +890,6 @@ server <- function(input, output, session) {
       return(
         shiny::withTags({
           div(h2("Participant information sheet"),
-              
-              h3("Your unique ID number: "),
-              p(tags$b(resp_id)),
               
               h3("Research Project"),
               p("The Influence of Information Search on Preference Formation and Choice (INSPiRE)."),
@@ -964,12 +968,12 @@ server <- function(input, output, session) {
         shiny::withTags({
           div(
             h3("Consent form"),
-            p("Please confirm that you have read and understood each of the items listed below. If you do wish to give consent you will be directed away from the survey."),
+            p("Please confirm that you have read and understood each of the items listed below. If you do wish to give consent simply leave the survey by closing your browser window."),
             shinyWidgets::materialSwitch(inputId = "consent_item_one", label = label_mandatory("I confirm that I have read and understood the information sheet explaining the research project."), value = FALSE, status = "success", right = TRUE, width = "100%"),
             shinyWidgets::materialSwitch(inputId = "consent_item_two", label = label_mandatory("I understand that my participation is voluntary and that I am free to withdraw at any time during the survey, but that any data collected up until this point may be used in analysis."), value = FALSE, status = "success", right = TRUE, width = "100%"),
             shinyWidgets::materialSwitch(inputId = "consent_item_three", label = label_mandatory("I have been given a unique identifying number and know whom to contact should I wish to obtain a copy of the data the researchers hold about me."), value = FALSE, status = "success", right = TRUE, width = "100%"),
             shinyWidgets::materialSwitch(inputId = "consent_item_four", label = label_mandatory("I understand that my responses will be kept anonymous and I give permission for members of the research team to have access to my anonymised responses."), value = FALSE, status = "success", right = TRUE, width = "100%"),
-            shinyWidgets::materialSwitch(inputId = "consent_item_five", label = label_mandatory("I agree for research data collected in the study to be made available to researchers, including those working outside the EU to be used in other research studies. I understand that any data that leave the research group will be fully anonymised so that I cannot be identified."), value = FALSE, status = "success", right = TRUE, width = "100%"),
+            shinyWidgets::materialSwitch(inputId = "consent_item_five", label = label_mandatory("I agree for research data collected in the study to be made available to other researchers, including those working outside the EU. I understand that any data that leaves the research group will be fully anonymised so that I cannot be identified."), value = FALSE, status = "success", right = TRUE, width = "100%"),
             shinyWidgets::materialSwitch(inputId = "consent_item_six", label = label_mandatory("I agree to take part in this study."), value = FALSE, status = "success", right = TRUE, width = "100%")
           )
         })
