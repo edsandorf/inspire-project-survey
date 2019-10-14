@@ -1186,12 +1186,22 @@ server <- function(input, output, session) {
       return(
         shiny::withTags(
           div(
-            h3("Section 3: Socio-demographics"),
-            p("In this section, you will be asked a series of questions about your ... ")
+            p("Thank you for telling us about your preferred bottle of wine in each of the previous choice occasions."),
+            p("To help us understand why you made the choices you did, we would now like to ask you some questions about what was important to you when making your choices, how you approached the choices and whether you found them realistic.")
           )
         )
       )
-    } # End video information page
+    } # End of section 3 landing page
+    
+    if (page_type == "section_4") {
+      return(
+        shiny::withTags(
+          div(
+            p("Finally, we would like to ask you a few questions about yourself. Remember, all your answers will be kept confidential and all data will be anonymized.")
+          )
+        )
+      )
+    } # End of section 4 landing page
     
     if (page_type == "final_page") {
       # Hide the 'next_page' button
