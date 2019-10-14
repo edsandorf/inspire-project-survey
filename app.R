@@ -38,8 +38,7 @@ ui <- fluidPage(theme = "master.css",
       
       # Title page
       fluidRow(class = "top-panel",
-        column(8,
-          uiOutput("resp_id")),
+        column(8),
         column(4,
           img(src = "mono-reverse-logo.png", class = "funder-panel-image", style = "border:0;"))
       ),
@@ -77,7 +76,11 @@ ui <- fluidPage(theme = "master.css",
             icon = icon("arrow-right"))
         ),
         column(1)
-      )
+      ),
+      
+      fluidRow(class = "funder-panel",
+        column(12,
+          p(uiOutput("resp_id"))))
     )
   )
 )
