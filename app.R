@@ -61,7 +61,7 @@ ui <- fluidPage(theme = "master.css",
                       
                       # Downlaod buttton for participant information sheet
                       shinyWidgets::downloadBttn(outputId = "download_info",
-                                                 label = "Participant information sheet",
+                                                 label = "Click to download a copy of the participant information sheet",
                                                  style = "material-flat", color = "success")
                ),
                column(1)
@@ -888,13 +888,13 @@ server <- function(input, output, session) {
               p(tags$b(resp_id)),
               
               h3("Research Project"),
-              p("The Influence of Information Search on Preference Formation and Choice (INSPiRE)"),
+              p("The Influence of Information Search on Preference Formation and Choice (INSPiRE)."),
               
               h3("Background and aims of project"),
-              p("We would like to invite you to take part in this survey. This study aims to improve our understanding of how people make choices. When people make choices, they also make trade-offs. To get more of something, you might have to give up something else. For example, how much money you are willing to give up to help conservation efforts. A better understanding of these choices and trade-offs may help researchers provide policy makers with more accurate information."),
+              p("We would like to invite you to take part in this survey. This study aims to improve our understanding of how people make choices. When people make choices, they also make trade-offs. To get more of something, you might have to give up something else. For example, how much money you are willing to give up to buy something. A better understanding of these choices and trade-offs may help researchers provide policy makers with more accurate information."),
               
               h3("Why have I been invited to take part?"),
-              p("You have been invited to take part because you are a UK resident aged 18 or over and are registered with [INSERT PANEL COMPANY HERE]."),
+              p("You have been invited to take part because you are a UK resident aged 18 or over and are registered with the market research company Savanta."),
               
               h3("Do I have to take part?"),
               p("Participation is voluntary. If you do decide to take part, you can withdraw your participation at any time without needing to explain and without penalty by closing your browser window.  If you withdraw we will not collect any more data from you. However, any data collected up until the point that you withdraw will be kept and used in the data analysis. You will be given this information sheet to keep and be asked to complete an electronic consent form."),
@@ -903,10 +903,10 @@ server <- function(input, output, session) {
               p("You will have to complete one online survey. The survey will take approximately 15 minutes to complete. We ask that you complete the survey in one sitting as it is not possible to rejoin later."),
               
               h3("Are there any potential risks in taking part?"),
-              p("There are no forseeable risks in taking part?"),
+              p("There are no forseeable risks in taking part."),
               
               h3("Are there any benefits in taking part?"),
-              p("The compensation for taking part in the survey is standard and stipulated by the survey company."),
+              p("The compensation for taking part in the survey is standard and stipulated by Savanta"),
               
               h3("Legal basis for processing personal data"),
               p("As part of the project we will be recording personal data relating to you.  This will be processed in accordance with the General Data Protection Regulation (GDPR).  Under GDPR the legal basis for processing your personal data will be public interest/the official authority of the University. All responses will be treated confidenially and all data collected anonymized."),
@@ -932,7 +932,7 @@ server <- function(input, output, session) {
               h3("Who do I contact if I have concerns about htis study or I wish to complain?"),
               p("If you would like to discuss the research with someone, please feel free to contact Dr Erlend Dancke Sandorf via e-mail: e.d.sandorf@stir.ac.uk. If you would like to discuss the research with someone not directly involved with the project, please contact Dr. Mirko Moro via e-mail: mirko.moro@stir.ac.uk. You have the right to lodge a complaint against the University regarding data protection issues with the Information Commissioner’s Office (https://ico.org.uk/concerns/). The University’s Data Protection Officer is Joanna Morrow, Deputy Secretary.  If you have any questions relating to data protection these can be addressed to data.protection@stir.ac.uk in the first instance."),
               
-              p("You can download a copy of this information by clicking the button below. If you wish to keep up to date with the research, please keep an eye on the project website: https://inspire-project.info")
+              p("You can download a copy of this information by clicking the button below. If you wish to keep up to date with the research, please keep an eye on the project website: https://inspire-project.info.")
           )
         })
       )
