@@ -611,7 +611,7 @@ server <- function(input, output, session) {
       # Render the question text
       text_id <- paste0("text_", current$question)
       output[[text_id]] <- renderText({
-        paste0("Question ", current$question, ": ",
+        paste0(#"Question ", current$question, ": ",
                dplyr::pull(outline, question)[current$page])
       })
       
@@ -741,7 +741,7 @@ server <- function(input, output, session) {
         # Render the question text
         text_id <- paste0("text_", current$question)
         output[[text_id]] <- renderText({
-          paste0("Question ", current$question, ": ",
+          paste0(#"Question ", current$question, ": ",
                  dplyr::pull(outline, question)[current$page])
         })
         
