@@ -217,6 +217,57 @@ server <- function(input, output, session) {
   #-----------------------------------------------------------------------------
   # Define the vector to store the data sent to the data base
   #-----------------------------------------------------------------------------
+  # Define the names of the answers to the questions
+  questions <- outline %>%
+    filter(page_type == "question")
+  names_questions <- NULL
+  for (i in seq_len(nrow(questions))) {
+    questions_tmp <- questions %>% slice(i)
+    question_type <- dplyr::pull(questions_tmp, question_type)
+    question_id <- dplyr::pull(questions_tmp, question_id)
+    
+    if (question_type == "battery" || question_type == "battery_randomized") {
+      # Equal to the battery
+      nr_of_items <- questions_tmp %>%
+        select(starts_with("battery")) %>%
+        select_if(not_all_na) %>%
+        unlist(., use.names = FALSE) %>%
+        length
+      
+      tmp <- paste(question_id, seq_len(nr_of_items), sep = "_")
+      names_questions <- c(names_questions, tmp)
+    }
+    
+    if (question_type == "bucket_list") {
+      # Equal to twice the options ranked + unranked
+      nr_of_items <- questions_tmp %>%
+        select(starts_with("option")) %>%
+        select_if(not_all_na) %>%
+        unlist(., use.names = FALSE) %>%
+        length
+      
+      tmp <- c(paste(question_id, "ranked", seq_len(nr_of_items), sep = "_"),
+        paste(question_id, "not_ranked", seq_len(nr_of_items), sep = "_"))
+      names_questions <- c(names_questions, tmp)
+    }
+    
+    if (question_type == "checkbox" || question_type == "checkbox_randomized") {
+      # Equal to the number of options
+      nr_of_items <- questions_tmp %>%
+        select(starts_with("option")) %>%
+        select_if(not_all_na) %>%
+        unlist(., use.names = FALSE) %>%
+        length
+      tmp <- c(paste(question_id, seq_len(nr_of_items), sep = "_"))
+      names_questions <- c(names_questions, tmp)
+    }
+    
+    if (question_type == "likert" || question_type == "text" || question_type == "choice_task" ||
+        question_type == "dropdown") {
+      names_questions <- c(names_questions, question_id)
+    }
+  }
+  
   # Define the names of the attributes
   names_attributes <- str_c(
     rep(str_c("ct", seq_len(tasks), sep = "_"), each = ((nalts - 1) * nattr)),
@@ -248,7 +299,8 @@ server <- function(input, output, session) {
     rep(seq_len(nalts), times = tasks))
   
   # Set the names of the output vector
-  survey_output_names <- c("time_zone_start", "time_start", names_time_page,
+  survey_output_names <- c("respid", names_questions, 
+    "time_zone_start", "time_start", names_time_page,
     "time_end", names_alt_times,
     names_consideration_sets, names_attributes, names_time_delay)
   
@@ -295,6 +347,7 @@ server <- function(input, output, session) {
   
   checked <- reactiveValues()
   battery_randomized <- reactiveVal(FALSE)
+  
   
   if (treatment %in% c(8, 9, 10)) {
     # Initiate the reactive values for the timer and active
@@ -408,10 +461,52 @@ server <- function(input, output, session) {
       survey_output[paste("t", current$alt, checkbox_names, sep = "_")] <<- checked_values
     }
     
-    #   Update the progressbar
+    # Update the progressbar
     shinyWidgets::updateProgressBar(session = session, id = "progress_bar",
                                     value = current$page,
                                     range_value = c(0, (pages - 1)), title = NULL)
+    
+    # Save the answers to the questions
+    if (page_type == "question") {
+      if (question_type == "likert" || question_type == "text" || question_type == "choice_task" ||
+          question_type == "dropdown") {
+        survey_output[question_id] <<- input[[response_id]]
+      } # End Likert, Text, Choice Task, Dropdown
+      
+      if (question_type == "battery" || question_type == "battery_randomized") {
+        
+        # The answers are grabbed in the order in which the questions appear
+        battery_tmp <- sapply(battery_questions(), function (i) input[[i]])
+        
+        # Set the order of the questions to correctly create the vector of outputs
+        nr_order <- seq_len(length(battery_questions()))
+        if (battery_randomized()) {
+          nr_order <- nr_order[order(randomized_order())]
+        }
+      
+        survey_output[paste(question_id, nr_order, sep = "_")] <<- battery_tmp
+      } # End battery and battery randomized questions.
+      
+      if (question_type == "bucket_list") {
+        
+        nr_of_items <- length(input[[response_id]][["ranked"]])
+        if (nr_of_items != 0) {
+          survey_output[paste(question_id, "ranked", seq_len(nr_of_items), sep = "_")] <<- input[[response_id]][["ranked"]]
+        }
+        
+        nr_of_items <- length(input[[response_id]][["not_ranked"]])
+        if (nr_of_items != 0) {
+          survey_output[paste(question_id, "not_ranked", seq_len(nr_of_items), sep = "_")] <<- input[[response_id]][["not_ranked"]]
+        }
+      } # End bucket list question
+      
+      if (question_type == "checkbox" || question_type == "checkbox_randomized") {
+        nr_of_items <- length(input[[response_id]])
+        
+        survey_output[paste(question_id, seq_len(nr_of_items), sep = "_")] <<- input[[response_id]]
+      }
+      
+    } # End capture answers to the questions
     
     current$alt <- 1
     
@@ -425,7 +520,7 @@ server <- function(input, output, session) {
     battery_randomized(FALSE)
     current$page <- current$page + 1
     
-    # Define the page and question types
+    # Update the page_type and question_type 
     page_type <- dplyr::pull(outline, page_type)[current$page]
     question_type <- dplyr::pull(outline, question_type)[current$page]
     if (is.na(question_type)) question_type <- "not a question page"
@@ -599,24 +694,24 @@ server <- function(input, output, session) {
           cols <- length(responses())
           
           battery <- matrix(as.character(seq_len(cols)), nrow = rows,
-                            ncol = cols, byrow = TRUE,
-                            dimnames = list(battery_questions(),
-                                            responses()))
+            ncol = cols, byrow = TRUE,
+            dimnames = list(battery_questions(),
+              responses()))
           
           for (i in seq_len(rows)) {
             battery[i, ] <- sprintf('<input type = "radio", name = "%s", value = "%s"/>',
-                                    battery_questions()[i], battery[i, ])
+              battery_questions()[i], battery[i, ])
           }
           
           # Return the battery of likert questions
           battery
           
         }, escape = FALSE, server = FALSE, selection = "none", 
-        options = list(
-          dom = "t", paging = FALSE, ordering = FALSE,
-          columnDefs = list(list(className = "dt-center", targets = seq_along(responses())))
-        ),
-        callback = DT::JS("table.rows().every(function(i, tab, row) {
+          options = list(
+            dom = "t", paging = FALSE, ordering = FALSE,
+            columnDefs = list(list(className = "dt-center", targets = seq_along(responses())))
+          ),
+          callback = DT::JS("table.rows().every(function(i, tab, row) {
                           var $this = $(this.node());
                           $this.attr('id', this.data()[0]);
                           $this.addClass('shiny-input-radiogroup');
@@ -624,9 +719,9 @@ server <- function(input, output, session) {
                           Shiny.unbindAll(table.table().node());
                           Shiny.bindAll(table.table().node());")
         )
-    } # End question type battery question
+      } # End question type battery question
     })
-      })
+  })
   
   #-----------------------------------------------------------------------------
   # When the question counter OR alternative counter changes, we need to
