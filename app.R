@@ -984,8 +984,9 @@ server <- function(input, output, session) {
       return(
         shiny::withTags(
           div(
-            h1("Section 1: Your consumption and purchasing behavior"),
-            p("In the next section we will ask some questions relating to your consumption and purchasing of wine.")
+            h1("Your consumption and purchasing behavior"),
+            p("To begin with, we would like to ask some questions related to your wine consumption and purchasing behavior."),
+            p("There are no right or wrong answers. We are only interested in your opinions, so please answer all questions as honestly as you can. Remember, all your answers will be kept confidential.")
           )
         )
       )
