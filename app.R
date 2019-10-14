@@ -474,7 +474,7 @@ server <- function(input, output, session) {
                                     range_value = c(0, (pages - 1)), title = NULL)
     
     # Save the answers to the questions
-    if (page_type == "question") {
+    if (page_type == "question" && production) {
       if (question_type == "likert" || question_type == "text" || question_type == "choice_task" ||
           question_type == "dropdown") {
         survey_output[question_id] <<- input[[response_id]]
@@ -674,7 +674,7 @@ server <- function(input, output, session) {
               input_id = "not_ranked"
             ),
             sortable::add_rank_list(
-              text = "My ranking",
+              text = "Your ranking (most preferred on top)",
               labels = NULL,
               input_id = "ranked"
             )
@@ -999,15 +999,20 @@ server <- function(input, output, session) {
       return(
         shiny::withTags(
           div(
-            h1("Section 2: A stated choice experiment about wine"),
-            p("In this section you will be asked to make several choices between different bottles of wine. Each bottle you are presented with is described by seven attributes. Please treat each choice occasion as if it is a real choice. Remember, if you choose to buy a bottle of wine, you will have less money to spend on other things."),
+            p("In this section you will be asked to make several choices between different bottles of wine. Each bottle you are presented with is described by seven attributes."),
             p("The", b("country of origin"), "specifies the country where the wine was produced."),
             p("The", b("colour"), "describes the type of wine."),
             p("The", b("alcohol by volume"), "specifies the percentage of alcohol in the bottle of wine."),
             p("The", b("grape variety"), "specifies the grape used in the making of the wine."),
             p("For red wines, the", b("characteristic"), "is indicated on a 5 point scale where 1 is light bodied and 5 is full bodied. For white and rosé wines, the", b("characteristic"), "is indicated on a 5 point scale where 1 is dry and 5 is sweet."),
             p(b("Organic"), "specifies whether the wine is organic or not."),
-            p("The", b("price"), "tells you the price per 75cl bottle of wine in pounds.")
+            p("The", b("price"), "tells you the price per 75cl bottle of wine in pounds."),
+            p("Please treat each choice occasion as if it is a real choice. 
+            Experience from other surveys is that people respond one way, but act differently. 
+            For example, people say that they will buy something when in reality they wouldn't.
+            We believe that this may be because people don't fully consider the impact that the cost may have on their budget. 
+            For this reason, when answering the following questions, please consider the impact that cost will have on your budget.
+            Remember, if you choose to buy a bottle of wine, you will have less money to spend on other things.")
           )
         )
       )
@@ -1017,8 +1022,10 @@ server <- function(input, output, session) {
       return(
         shiny::withTags(
           div(
-            h3("Here we show a video describing how to indicate your choice in each choice occasion. The video will take less than one minute. Please watch the video carefully."),
-            p("[INSERT VIDEOS HERE DPENDING ON THE TREATMENT]")
+            h3("Here we show a video to explain the choice accasions and how to indicate your choice."),
+            h3("The video will take less than one minute. Please watch the video carefully."),
+            video(id = "sample-video", type = "video/mp4", src = "sample-video-01.mp4", controls = "controls",
+              width = 900, height = 450)
           )
         )
       )
