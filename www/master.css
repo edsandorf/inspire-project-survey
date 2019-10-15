@@ -104,11 +104,18 @@ body {
 /*  Mandatory star for use with the consent forms */
 .mandatory-star {color: red;}
 
-
-
-/*  Change the spacing between the radio-buttons */
-.checkbox-inline, .radio-inline {
-
+/* Set button colors */
+#next_page {
+  background-color:#28a745; 
+}
+/*
+#download_info {
+  background-color:#28a745; 
+  border-color:#28a745; 
+}
+*/
+#next_alt {
+  background-color:#28a745; 
 }
 
 #loading-screen {
