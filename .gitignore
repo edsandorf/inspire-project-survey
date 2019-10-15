@@ -48,3 +48,7 @@ config.yml
 
 #   Do not track pdf files
 *.pdf
+
+# Don't track the test-files
+test.csv
+/csv/outline_test.csv
