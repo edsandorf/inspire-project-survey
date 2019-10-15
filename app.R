@@ -78,7 +78,7 @@ ui <- fluidPage(theme = "master.css",
       
       fluidRow(class = "funder-panel",
         column(12,
-          p(uiOutput("resp_id"))))
+          uiOutput("resp_id")))
     )
   )
 )
@@ -374,7 +374,7 @@ server <- function(input, output, session) {
   # Generate a survey specific ID number
   resp_id <- paste0(sample(c(letters, LETTERS, 0:9), 10), collapse = "")
   output$resp_id <- renderUI({
-    paste0("Your unique respondent ID is: ", resp_id)
+    tags$p(paste0("Your unique respondent ID is: ", resp_id))
   })
   
   # Add exit URL
