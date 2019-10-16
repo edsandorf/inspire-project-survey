@@ -871,9 +871,9 @@ server <- function(input, output, session) {
           div(
             h1("Welcome"),
             p("Thank you for your interest in this study."),
-            p("We are inviting you to take part in a research project that explores how people make decisions"),
-            p("On the next page, you will receive more information about the project and the survey. Please read the information carefully before proceeding"),
-            p(paste0("You are in treatment: ", treatment))
+            p("We are inviting you to take part in a research project that explores how people make decisions."),
+            p("On the next page, you will receive more information about the project and the survey. Please read the information carefully before proceeding."),
+            p(paste0("For testing purposes only! You are in treatment: ", treatment))
           )
         )
       )
@@ -905,7 +905,7 @@ server <- function(input, output, session) {
               p("You have been invited to take part because you are a UK resident aged 18 or over and are registered with the market research company Savanta."),
               
               h3("Do I have to take part?"),
-              p("Participation is voluntary. If you do decide to take part, you can withdraw your participation at any time without needing to explain and without penalty by closing your browser window.  If you withdraw we will not collect any more data from you. However, any data collected up until the point that you withdraw will be kept and used in the data analysis. You will be given this information sheet to keep and be asked to complete an electronic consent form."),
+              p("Participation is voluntary. If you do decide to take part, you can withdraw your participation at any time without needing to explain and without penalty by closing your browser window.  If you withdraw we will not collect any more data from you. However, any data collected up until the point that you withdraw will be kept and used in the data analysis. You can download a copy of this information sheet by clicking the download button at the bottom of the page. On the next page you will be asked to consent to participating in the survey."),
               
               h3("What will happen if I take part?"),
               p("You will have to complete one online survey. The survey will take approximately 15 minutes to complete. We ask that you complete the survey in one sitting as it is not possible to rejoin later."),
@@ -914,13 +914,13 @@ server <- function(input, output, session) {
               p("There are no forseeable risks in taking part."),
               
               h3("Are there any benefits in taking part?"),
-              p("The compensation for taking part in the survey is standard and stipulated by Savanta"),
+              p("The compensation for taking part in the survey is standard and stipulated by Savanta."),
               
               h3("Legal basis for processing personal data"),
-              p("As part of the project we will be recording personal data relating to you.  This will be processed in accordance with the General Data Protection Regulation (GDPR).  Under GDPR the legal basis for processing your personal data will be public interest/the official authority of the University. All responses will be treated confidenially and all data collected anonymized."),
+              p("As part of the project we will be recording personal data relating to you.  This will be processed in accordance with the General Data Protection Regulation (GDPR).  Under GDPR the legal basis for processing your personal data will be public interest/the official authority of the University. All responses will be treated confidenially and all data collected anonymised."),
               
               h3("What happens to the data I provide?"),
-              p("The research data will be anonymized by removing any personal identifiers such as names, e-mail addresses or IP-addresses, so nothing about you will be identifiable. Your  data will be kept for two years on Research Drive, a secure data centre on the Stirling campus, and then will be lodged in DataSTORRE. The data will be kept for a minimum of 10 years after last publication or access of the data in accordance with the University of Stirling’s research data policy."),
+              p("The research data will be anonymised by removing any personal identifiers such as names, e-mail addresses or IP-addresses, so nothing about you will be identifiable. Your  data will be kept for two years on Research Drive, a secure data centre on the Stirling campus, and then will be lodged in DataSTORRE. The data will be kept for a minimum of 10 years after last publication or access of the data in accordance with the University of Stirling’s research data policy."),
               
               h3("Future uses of the data"),
               p("Due to the nature of this research, it is possible that other researchers may find the data useful to answering other research questions. We will ask for your explicit consent for your data to be shared in this way and, if you agree, we will ensure that the data collected is untraceable back to you before letting others use it."),
@@ -937,8 +937,8 @@ server <- function(input, output, session) {
               h3("Your rights"),
               p("You have the right to request to see a copy of the information we hold about you. You have the right to withdraw from the survey at any time without giving reasons and without consequences to you, and we will not collect any more data from you. However, any data you have provided up to the point of withdrawal may be used for analysis."),
               
-              h3("Who do I contact if I have concerns about htis study or I wish to complain?"),
-              p("If you would like to discuss the research with someone, please feel free to contact Dr Erlend Dancke Sandorf via e-mail: e.d.sandorf@stir.ac.uk. If you would like to discuss the research with someone not directly involved with the project, please contact Dr. Mirko Moro via e-mail: mirko.moro@stir.ac.uk. You have the right to lodge a complaint against the University regarding data protection issues with the Information Commissioner’s Office (https://ico.org.uk/concerns/). The University’s Data Protection Officer is Joanna Morrow, Deputy Secretary.  If you have any questions relating to data protection these can be addressed to data.protection@stir.ac.uk in the first instance."),
+              h3("Who do I contact if I have concerns about this study or I wish to complain?"),
+              p("If you would like to discuss the research with someone, please feel free to contact Dr Erlend Dancke Sandorf via e-mail: e.d.sandorf@stir.ac.uk. If you would like to discuss the research with someone not directly involved with the project, please contact Dr Mirko Moro via e-mail: mirko.moro@stir.ac.uk. You have the right to lodge a complaint against the University regarding data protection issues with the Information Commissioner’s Office (https://ico.org.uk/concerns/). The University’s Data Protection Officer is Joanna Morrow, Deputy Secretary.  If you have any questions relating to data protection these can be addressed to data.protection@stir.ac.uk in the first instance."),
               
               p("You can download a copy of this information by clicking the button below. If you wish to keep up to date with the research, please keep an eye on the project website: https://inspire-project.info.")
           )
@@ -975,10 +975,10 @@ server <- function(input, output, session) {
         shiny::withTags({
           div(
             h3("Consent form"),
-            p("Please confirm that you have read and understood each of the items listed below. If you do wish to give consent simply leave the survey by closing your browser window."),
+            p("Please confirm that you have read and understood each of the items listed below. If you do NOT wish to give consent simply leave the survey by closing your browser window."),
             shinyWidgets::materialSwitch(inputId = "consent_item_one", label = label_mandatory("I confirm that I have read and understood the information sheet explaining the research project."), value = FALSE, status = "success", right = TRUE, width = "100%"),
             shinyWidgets::materialSwitch(inputId = "consent_item_two", label = label_mandatory("I understand that my participation is voluntary and that I am free to withdraw at any time during the survey, but that any data collected up until this point may be used in analysis."), value = FALSE, status = "success", right = TRUE, width = "100%"),
-            shinyWidgets::materialSwitch(inputId = "consent_item_three", label = label_mandatory("I have been given a unique identifying number and know whom to contact should I wish to obtain a copy of the data the researchers hold about me."), value = FALSE, status = "success", right = TRUE, width = "100%"),
+            shinyWidgets::materialSwitch(inputId = "consent_item_three", label = label_mandatory("I have been given a unique identifying number and know whom to contact should I wish to obtain a copy of the data the researchers hold about me. For your reference, your id number is in the footer."), value = FALSE, status = "success", right = TRUE, width = "100%"),
             shinyWidgets::materialSwitch(inputId = "consent_item_four", label = label_mandatory("I understand that my responses will be kept anonymous and I give permission for members of the research team to have access to my anonymised responses."), value = FALSE, status = "success", right = TRUE, width = "100%"),
             shinyWidgets::materialSwitch(inputId = "consent_item_five", label = label_mandatory("I agree for research data collected in the study to be made available to other researchers, including those working outside the EU. I understand that any data that leaves the research group will be fully anonymised so that I cannot be identified."), value = FALSE, status = "success", right = TRUE, width = "100%"),
             shinyWidgets::materialSwitch(inputId = "consent_item_six", label = label_mandatory("I agree to take part in this study."), value = FALSE, status = "success", right = TRUE, width = "100%")
@@ -1192,7 +1192,7 @@ server <- function(input, output, session) {
         shiny::withTags(
           div(
             p("Thank you for telling us about your preferred bottle of wine in each of the previous choice occasions."),
-            p("To help us understand why you made the choices you did, we would now like to ask you some questions about what was important to you when making your choices, how you approached the choices and whether you found them realistic.")
+            p("To help us understand your choices, we would now like to ask you some questions about what was important to you when making them, how you approached them and whether you found them realistic.")
           )
         )
       )
@@ -1202,7 +1202,7 @@ server <- function(input, output, session) {
       return(
         shiny::withTags(
           div(
-            p("Finally, we would like to ask you a few questions about yourself. Remember, all your answers will be kept confidential and all data will be anonymized.")
+            p("Finally, we would like to ask you a few questions about yourself. Remember, all your answers will be kept confidential and all data will be anonymised.")
           )
         )
       )
@@ -1217,6 +1217,7 @@ server <- function(input, output, session) {
           div(
             p("Thank you very much for participating."),
             p("To claim your reward for participating, please click the button below to be redirected."),
+            p(paste0("For testing purposes only! You are in treatment: ", treatment)),
             a(h4("Exit the survey", class = "btn btn-default action-button" , 
                  style = "fontweight:600"),
               href = exit_url)
