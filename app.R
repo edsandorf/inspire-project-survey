@@ -302,7 +302,7 @@ server <- function(input, output, session) {
     rep(seq_len(nalts), times = tasks))
   
   # Set the names of the output vector
-  survey_output_names <- c("respid", names_questions, 
+  survey_output_names <- c("respid", "treatment", names_questions, 
     "time_zone_start", "time_start", names_time_page,
     "time_end", names_alt_times,
     names_consideration_sets, names_attributes, names_time_delay)
@@ -335,6 +335,11 @@ server <- function(input, output, session) {
   if (treatment %in% c(8, 9, 10)) {
     survey_output[names_time_delay] <- time_delay
   }
+  
+  #-----------------------------------------------------------------------------
+  # Add the treatment to the output vector
+  #-----------------------------------------------------------------------------
+  survey_output["treatment"] <- treatment
   
   #-----------------------------------------------------------------------------
   # Define a set of reactive values. Note that we start the question counter
