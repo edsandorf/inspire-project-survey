@@ -448,7 +448,7 @@ server <- function(input, output, session) {
   # counters, and reset the alt counter.
   #-----------------------------------------------------------------------------
   observeEvent(input[["next_page"]], {
-    # Get the page_type and question_tyep
+    # Get the page_type and question_type
     page_type <- dplyr::pull(outline, page_type)[current$page]
     question_type <- dplyr::pull(outline, question_type)[current$page]
     question_id <- dplyr::pull(outline, question_id)[current$page]
@@ -457,7 +457,7 @@ server <- function(input, output, session) {
     # Store the time spent on the page
     survey_output[paste0("time_end_page_", current$page)] <<- Sys.time()
     
-    # Get the checked values at each click of the next page button
+    # Get the checked values at each click of the next page button to capture the last consideration set
     if (current_best || consideration_set || consideration_set_all) {
       checkbox_names <- paste("considered", seq_len(current$alt), "task", current$task, sep = "_")
       checked_values <- vapply(checkbox_names, function (x) {
@@ -518,8 +518,6 @@ server <- function(input, output, session) {
       
     } # End capture answers to the questions
     
-    current$alt <- 1
-    
     # Reset the checked values
     if (current_best || consideration_set || consideration_set_all) {
       lapply(seq_len(nalts), function (x) {
@@ -529,6 +527,7 @@ server <- function(input, output, session) {
     
     battery_randomized(FALSE)
     current$page <- current$page + 1
+    current$alt <- 1
     
     # Update the page_type and question_type 
     page_type <- dplyr::pull(outline, page_type)[current$page]
@@ -840,14 +839,6 @@ server <- function(input, output, session) {
       paste0("The next alternative can be revealed in: ", 
         stringr::str_pad(left_on_timer, 4, "right", "0"), "s")
     })
-  })
-  
-  #-----------------------------------------------------------------------------
-  # When the page counter increases, store the current responses to the 
-  # questions and meta-data gathered so far
-  #-----------------------------------------------------------------------------
-  observeEvent(current$page, {
-    # Grab the question inputs AND the conditional inputs
   })
   
   #-----------------------------------------------------------------------------
