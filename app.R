@@ -1027,7 +1027,7 @@ server <- function(input, output, session) {
           div(
             h3("Here we show a video to explain the choice accasions and how to indicate your choice."),
             h3("The video will take less than one minute. Please watch the video carefully."),
-            video(id = "sample-video", type = "video/mp4", src = "sample-video-01.mp4", controls = "controls",
+            video(id = "sample-video", type = "video/mkv", src = "sample-video.mkv", controls = "controls",
               width = 900, height = 450)
           )
         )
