@@ -317,7 +317,7 @@ server <- function(input, output, session) {
   #-----------------------------------------------------------------------------
   survey_output[names_attributes] <- as.vector(t(choice_tasks))
   
-  for (i in seq_len(nalts)) {
+  for (i in seq_len(tasks)) {
     row_index <- 1 + (i - 1) * nalts
     choice_tasks <- choice_tasks %>%
       add_row(country = "", color = "", alcohol = "", grape = "",
