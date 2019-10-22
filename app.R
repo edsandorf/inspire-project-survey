@@ -245,12 +245,82 @@ server <- function(input, output, session) {
     arrange(ct_order, alt_order) %>%
     select(-ct_order, -alt_order)
   
+  # Set up data to send to database
+  choice_data <- choice_tasks %>%
+    mutate(id = resp_id,
+      treatment = treatment,
+      ct = rep(seq_len(tasks), each = (nalts - 1)),
+      alt = rep(seq_len(nalts - 1), times = tasks))
+  
   #-----------------------------------------------------------------------------
-  # Define the vector to store the data sent to the data base
+  # Define when people stopped searching- search_data
+  #-----------------------------------------------------------------------------
+  search_data <- tibble(
+    ct = seq_len(tasks),
+    alts_revealed = NA
+  )
+  
+  #-----------------------------------------------------------------------------
+  # Define the consideration sets - consideration_data
+  #-----------------------------------------------------------------------------
+  rows <- nrow(choice_tasks)
+  columns <- c("ct", "alt", paste0("search_period_", seq_len(tasks)))
+  
+  consideration_data <- matrix(NA, nrow = nalts*tasks, ncol = length(columns))
+  colnames(consideration_data) <- columns
+  consideration_data[, "ct"] <- rep(seq_len(tasks), each = (nalts))
+  consideration_data[, "alt"] <- rep(seq_len(nalts ), times = tasks)
+  
+  # consideration_data <- tibble(
+  #   ct = rep(seq_len(tasks), each = (nalts)),
+  #   alt = rep(seq_len(nalts ), times = tasks),
+  #   search_period_1 = rep(NA, length(alt)),
+  #   search_period_2 = rep(NA, length(alt)),
+  #   search_period_3 = rep(NA, length(alt)),
+  #   search_period_4 = rep(NA, length(alt)),
+  #   search_period_5 = rep(NA, length(alt)),
+  #   search_period_6 = rep(NA, length(alt)),
+  #   search_period_7 = rep(NA, length(alt)),
+  #   search_period_8 = rep(NA, length(alt)),
+  #   search_period_9 = rep(NA, length(alt)),
+  #   search_period_10 = rep(NA, length(alt))
+  # )
+  
+  #-----------------------------------------------------------------------------
+  # Define the time delay - time_delay_data
+  #-----------------------------------------------------------------------------
+  time_delay_data <- tibble(
+    ct = rep(seq_len(tasks), each = (nalts)),
+    alt = rep(seq_len(nalts ), times = tasks),
+    time_delay = time_delay
+  )
+  
+  #-----------------------------------------------------------------------------
+  # Define how long people spent on each page and alternative - time_data
+  #-----------------------------------------------------------------------------
+  # Define the names of the time on each page
+  names_time_page <- paste0("time_end_page_", seq_len(pages))
+  
+  # Define the names of the time on each alt
+  names_alt_times <- paste0("time_end_task_",
+    rep(seq_len(tasks), each = nalts),
+    "_alt_",
+    rep(seq_len(nalts), times = tasks))
+  
+  names_time <- c("time_zone_start", "time_start", names_time_page, names_alt_times, "time_end")
+  time_data <- as_tibble(matrix(NA, nrow = 1, ncol = length(names_time),
+    dimnames = list(rownames = NA, colnames = names_time)))
+  
+  time_data[, "time_zone_start"] <- time_zone_start
+  time_data[, "time_start"] <- time_start
+  
+  #-----------------------------------------------------------------------------
+  # Define the responses to the questions - question_data
   #-----------------------------------------------------------------------------
   # Define the names of the answers to the questions
   questions <- outline %>%
     filter(page_type == "question")
+  
   names_questions <- NULL
   for (i in seq_len(nrow(questions))) {
     questions_tmp <- questions %>% slice(i)
@@ -299,59 +369,62 @@ server <- function(input, output, session) {
     }
   }
   
+  question_data <- as_tibble(matrix(NA, nrow = 1, ncol = length(names_questions),
+    dimnames = list(rownames = NA, colnames = names_questions)))
+  
   # Define the names of the attributes
-  names_attributes <- str_c(
-    rep(str_c("ct", seq_len(tasks), sep = "_"), each = ((nalts - 1) * nattr)),
-    rep(names(choice_tasks), times = ((nalts - 1) * tasks)),
-    rep(rep(seq_len((nalts - 1)), each = nattr), times = tasks), sep = "_"
-  )
+  # names_attributes <- str_c(
+  #   rep(str_c("ct", seq_len(tasks), sep = "_"), each = ((nalts - 1) * nattr)),
+  #   rep(names(choice_tasks), times = ((nalts - 1) * tasks)),
+  #   rep(rep(seq_len((nalts - 1)), each = nattr), times = tasks), sep = "_"
+  # )
   
   # Define the names of the consideration sets
-  tmp <- NULL
-  for (i in seq_len(nalts)) {
-    tmp <- c(tmp, paste("t", i, "considered", seq_len(i), sep = "_"))
-  }
-  names_consideration_sets <- paste0(rep(tmp, times = tasks), "_task_",
-    rep(seq_len(tasks), each = length(tmp)))
+  # tmp <- NULL
+  # for (i in seq_len(nalts)) {
+  #   tmp <- c(tmp, paste("t", i, "considered", seq_len(i), sep = "_"))
+  # }
+  # names_consideration_sets <- paste0(rep(tmp, times = tasks), "_task_",
+  #   rep(seq_len(tasks), each = length(tmp)))
   
   # Define the names of the time delay
-  names_time_delay <- paste0("time_delay_task_",
-    rep(seq_len(tasks), each = nalts),
-    "_alt_",
-    rep(seq_len(nalts), times = tasks))
+  # names_time_delay <- paste0("time_delay_task_",
+  #   rep(seq_len(tasks), each = nalts),
+  #   "_alt_",
+  #   rep(seq_len(nalts), times = tasks))
   
   # Define the names of the time on each page
-  names_time_page <- paste0("time_end_page_", seq_len(pages))
+  # names_time_page <- paste0("time_end_page_", seq_len(pages))
   
   # Define the names of the time on each alt
-  names_alt_times <- paste0("time_end_task_",
-    rep(seq_len(tasks), each = nalts),
-    "_alt_",
-    rep(seq_len(nalts), times = tasks))
+  # names_alt_times <- paste0("time_end_task_",
+  #   rep(seq_len(tasks), each = nalts),
+  #   "_alt_",
+  #   rep(seq_len(nalts), times = tasks))
   
   # Set the names of the output vector
-  survey_output_names <- c("respid", "treatment", names_questions, 
-    "time_zone_start", "time_start", names_time_page,
-    "time_end", names_alt_times,
-    names_consideration_sets, names_attributes, names_time_delay)
-  
-  # Create the survey output vector to be only NA
-  survey_output <- rep(NA, length(survey_output_names))
-  names(survey_output) <- survey_output_names
+  # survey_output_names <- c("respid", "treatment", names_questions, 
+  #   "time_zone_start", "time_start", names_time_page,
+  #   "time_end", names_alt_times,
+  #   names_consideration_sets, names_attributes, names_time_delay)
+  # 
+  # # Create the survey output vector to be only NA
+  # survey_output <- rep(NA, length(survey_output_names))
+  # names(survey_output) <- survey_output_names
 
   #-----------------------------------------------------------------------------
   # Add the attribute data to the vector of survey outputs and
   # empty rows to the choice_tasks (i.e. opt out)
   #-----------------------------------------------------------------------------
-  survey_output[names_attributes] <- as.vector(t(choice_tasks))
-  
+  # survey_output[names_attributes] <- as.vector(t(choice_tasks))
+
   for (i in seq_len(tasks)) {
     row_index <- 1 + (i - 1) * nalts
     choice_tasks <- choice_tasks %>%
       add_row(country = "", color = "", alcohol = "", grape = "",
         characteristic = "", organic = "", price = "", .before = row_index)
   }
-  
+
   # Update attribute names for display
   names_attributes <- c("Country of origin", "Colour", "Alcohol by volume",
     "Grape variety", "Characteristic", "Organic", "Price")
@@ -360,14 +433,14 @@ server <- function(input, output, session) {
   #-----------------------------------------------------------------------------
   # Add the time_delay data to the output vector
   #-----------------------------------------------------------------------------
-  if (treatment %in% c(8, 9, 10)) {
-    survey_output[names_time_delay] <- time_delay
-  }
+  # if (treatment %in% c(8, 9, 10)) {
+  #   survey_output[names_time_delay] <- time_delay
+  # }
   
   #-----------------------------------------------------------------------------
   # Add the treatment to the output vector
   #-----------------------------------------------------------------------------
-  survey_output["treatment"] <- treatment
+  # survey_output["treatment"] <- treatment
   
   #-----------------------------------------------------------------------------
   # Define a set of reactive values. Note that we start the question counter
@@ -392,34 +465,32 @@ server <- function(input, output, session) {
   }
   
   #-----------------------------------------------------------------------------
-  # Define what happens when the session begins
-  #-----------------------------------------------------------------------------
-  # Add time start to the output vector
-  survey_output["time_start"] <- Sys.time()
-  survey_output["time_zone_start"] <- Sys.timezone()
-  
-  # Grab the variables passe through the URL
-  url_vars <- NULL
-  observe({
-    url_vars <<- parseQueryString(session$clientData$url_search)
-  })
-  
-  # Generate a survey specific ID number
-  resp_id <- paste0(sample(c(letters, LETTERS, 0:9), 10), collapse = "")
-  output$resp_id <- renderUI({
-    tags$p(paste0("Your unique respondent ID is: ", resp_id))
-  })
-  
-  # Add exit URL
-  exit_url <- paste0("https://inspire-project.info/?id=", resp_id, "&?test=", 8)
-  
-  #-----------------------------------------------------------------------------
   # Define what happens when the session ends
   #-----------------------------------------------------------------------------
   session$onSessionEnded(
     function () {
       # Add time end to the output vector
-      survey_output["time_end"] <- Sys.time()
+      time_data[, "time_end"] <<- Sys.time()
+      
+      # Turn data vectors into JSON
+      choice_data <- jsonlite::toJSON(choice_data)
+      search_data <- jsonlite::toJSON(search_data)
+      consideration_data <- jsonlite::toJSON(consideration_data)
+      time_delay_data <- jsonlite::toJSON(time_delay_data)
+      time_data <- jsonlite::toJSON(time_data)
+      question_data <- jsonlite::toJSON(question_data)
+      
+      survey_output <- c(
+        choice_data, search_data, consideration_data, time_delay_data, time_data,
+        question_data
+        )
+      
+      names(survey_output) <- c(
+        "choice_data", "search_data", "consideration_data", "time_delay_data",
+        "time_data", "question_data"
+        )
+      
+      # Send the data to the database
       write.csv(survey_output, "test.csv")
       # save_db(survey_output, "test_db", db_config)
     }
@@ -483,7 +554,7 @@ server <- function(input, output, session) {
     response_id <- paste0("response_", current$question)
     
     # Store the time spent on the page
-    survey_output[paste0("time_end_page_", current$page)] <<- Sys.time()
+    time_data[, paste0("time_end_page_", current$page)] <<- Sys.time()
     
     # Get the checked values at each click of the next page button to capture the last consideration set
     if (current_best || consideration_set || consideration_set_all) {
@@ -496,7 +567,12 @@ server <- function(input, output, session) {
       }
       
       # Store the consideration sets
-      survey_output[paste("t", current$alt, checkbox_names, sep = "_")] <<- checked_values
+      the_rows <- (1 + (current$task - 1) * nalts):((current$task - 1) * nalts + current$alt)
+      column <- paste0("search_period_", current$alt)
+      consideration_data[the_rows, column] <<- checked_values
+      
+      # Store the consideration sets
+      # survey_output[paste("t", current$alt, checkbox_names, sep = "_")] <<- checked_values
     }
     
     # Update the progressbar
@@ -504,11 +580,14 @@ server <- function(input, output, session) {
                                     value = current$page,
                                     range_value = c(0, (pages - 1)), title = NULL)
     
+    # Store the number of alts revealed
+    search_data[current$task, "alts_revealed"] <<- current$alt
+    
     # Save the answers to the questions
     if (page_type == "question" && production) {
       if (question_type == "likert" || question_type == "text" || question_type == "choice_task" ||
           question_type == "dropdown") {
-        survey_output[question_id] <<- input[[response_id]]
+        question_data[, question_id] <<- input[[response_id]]
       } # End Likert, Text, Choice Task, Dropdown
       
       if (question_type == "battery" || question_type == "battery_randomized") {
@@ -522,26 +601,26 @@ server <- function(input, output, session) {
           nr_order <- nr_order[order(randomized_order())]
         }
       
-        survey_output[paste(question_id, nr_order, sep = "_")] <<- battery_tmp
+        question_data[, paste(question_id, nr_order, sep = "_")] <<- battery_tmp
       } # End battery and battery randomized questions.
       
       if (question_type == "bucket_list") {
         
         nr_of_items <- length(input[[response_id]][["ranked"]])
         if (nr_of_items != 0) {
-          survey_output[paste(question_id, "ranked", seq_len(nr_of_items), sep = "_")] <<- input[[response_id]][["ranked"]]
+          question_data[, paste(question_id, "ranked", seq_len(nr_of_items), sep = "_")] <<- input[[response_id]][["ranked"]]
         }
         
         nr_of_items <- length(input[[response_id]][["not_ranked"]])
         if (nr_of_items != 0) {
-          survey_output[paste(question_id, "not_ranked", seq_len(nr_of_items), sep = "_")] <<- input[[response_id]][["not_ranked"]]
+          question_data[, paste(question_id, "not_ranked", seq_len(nr_of_items), sep = "_")] <<- input[[response_id]][["not_ranked"]]
         }
       } # End bucket list question
       
       if (question_type == "checkbox" || question_type == "checkbox_randomized") {
         nr_of_items <- length(input[[response_id]])
         
-        survey_output[paste(question_id, seq_len(nr_of_items), sep = "_")] <<- input[[response_id]]
+        question_data[, paste(question_id, seq_len(nr_of_items), sep = "_")] <<- input[[response_id]]
       }
       
     } # End capture answers to the questions
@@ -555,7 +634,9 @@ server <- function(input, output, session) {
     
     battery_randomized(FALSE)
     current$page <- current$page + 1
-    current$alt <- 1
+    
+    
+    if (current$task < 10) current$alt <- 1
     
     # Update the page_type and question_type 
     page_type <- dplyr::pull(outline, page_type)[current$page]
@@ -589,7 +670,7 @@ server <- function(input, output, session) {
   observeEvent(input[["next_alt"]], {
     # Get the response time at the current task and alt
     if (sequential) {
-      survey_output[paste0("time_end_task_", current$task, "_alt_", current$alt)] <<- Sys.time()
+      time_data[, paste0("time_end_task_", current$task, "_alt_", current$alt)] <<- Sys.time()
     }
     
     # Get the response_id
@@ -606,7 +687,12 @@ server <- function(input, output, session) {
       }
       
       # Store the consideration sets
-      survey_output[paste("t", current$alt, checkbox_names, sep = "_")] <<- checked_values
+      the_rows <- (1 + (current$task - 1) * nalts):((current$task - 1) * nalts + current$alt)
+      column <- paste0("search_period_", current$alt)
+      consideration_data[the_rows, column] <<- checked_values
+        
+      # Store the consideration sets
+      # survey_output[paste("t", current$alt, checkbox_names, sep = "_")] <<- checked_values
     }
     
     # Manually trigger unbind-DT when the next alternative button is clicked
