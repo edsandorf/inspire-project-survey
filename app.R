@@ -94,10 +94,32 @@ ui <- fluidPage(theme = "master.css",
 #-------------------------------------------------------------------------------
 server <- function(input, output, session) {
   #-----------------------------------------------------------------------------
+  # Define what happens when the session begins
+  #-----------------------------------------------------------------------------
+  # Add time start to the output vector
+  time_start <- Sys.time()
+  time_zone_start <- Sys.timezone()
+  
+  # Grab the variables passe through the URL
+  url_vars <- NULL
+  observe({
+    url_vars <<- parseQueryString(session$clientData$url_search)
+  })
+  
+  # Generate a survey specific ID number
+  resp_id <- paste0(sample(c(letters, LETTERS, 0:9), 10), collapse = "")
+  output$resp_id <- renderUI({
+    tags$p(paste0("Your unique respondent ID is: ", resp_id))
+  })
+  
+  # Add exit URL
+  exit_url <- paste0("https://inspire-project.info/?id=", resp_id, "&?test=", 8)
+  
+  #-----------------------------------------------------------------------------
   # Define treatments and randomly allocate respondents
   #-----------------------------------------------------------------------------
-  # treatment <- 6
-  treatment <- sample(1:10, 1)
+  treatment <- 6
+  # treatment <- sample(1:10, 1)
   
   # Standard choice task with 3 alternatives
   if (treatment == 1) {
@@ -107,6 +129,7 @@ server <- function(input, output, session) {
     consideration_set <- FALSE
     consideration_set_all <- FALSE
     search_cost <- FALSE
+    time_delay <- NA
   }
   
   # Standard choice task with 6 alternatives
@@ -117,6 +140,7 @@ server <- function(input, output, session) {
     consideration_set <- FALSE
     consideration_set_all <- FALSE
     search_cost <- FALSE
+    time_delay <- NA
   }
   
   # Standard choice tasks with 9 alternatives
@@ -127,6 +151,7 @@ server <- function(input, output, session) {
     consideration_set <- FALSE
     consideration_set_all <- FALSE
     search_cost <- FALSE
+    time_delay <- NA
   }
   
   # Sequential choice tasks
@@ -137,6 +162,7 @@ server <- function(input, output, session) {
     consideration_set <- FALSE
     consideration_set_all <- FALSE
     search_cost <- FALSE
+    time_delay <- NA
   }
   
   # Sequential choice tasks with the current best selected
@@ -147,6 +173,7 @@ server <- function(input, output, session) {
     consideration_set <- FALSE
     consideration_set_all <- FALSE
     search_cost <- FALSE
+    time_delay <- NA
   }
   
   # Sequential choice task with the current consideration set (max 3)
@@ -157,6 +184,7 @@ server <- function(input, output, session) {
     consideration_set <- TRUE
     consideration_set_all <- FALSE
     search_cost <- FALSE
+    time_delay <- NA
   }
   
   # Sequential choice task with the current consideration set (full)
@@ -167,6 +195,7 @@ server <- function(input, output, session) {
     consideration_set <- FALSE
     consideration_set_all <- TRUE
     search_cost <- FALSE
+    time_delay <- NA
   }
   
   # Sequential choice task with fixed time cost across alts and tasks
@@ -203,8 +232,7 @@ server <- function(input, output, session) {
   }
   
   #-----------------------------------------------------------------------------
-  # Get the choice tasks and prepare to send all choice task data to the
-  # data base
+  # Define the choice tasks - choice_data
   #-----------------------------------------------------------------------------
   profiles <- sample(seq_len(nrow(design)), (tasks * (nalts - 1)), prob = weights)
   choice_tasks <- design %>%
