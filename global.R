@@ -2,7 +2,7 @@
 # Load packages
 #-------------------------------------------------------------------------------
 pkgs <- c("stringr", "shiny", "shinyjs", "shinyWidgets", "DT",
-          "RMariaDB", "config", "dplyr", "sortable")
+          "RMariaDB", "config", "dplyr", "sortable", "jsonlite")
 invisible(lapply(pkgs, require, character.only = TRUE))
 
 #-------------------------------------------------------------------------------
@@ -29,7 +29,7 @@ time_inc <- 250
 #-------------------------------------------------------------------------------
 # If TRUE removes printing the answers and enables next page checks
 #-------------------------------------------------------------------------------
-production <- FALSE
+production <- TRUE
 
 #-------------------------------------------------------------------------------
 # Define a function to save results to the database
