@@ -97,7 +97,7 @@ server <- function(input, output, session) {
   # Define what happens when the session begins
   #-----------------------------------------------------------------------------
   # Add time start to the output vector
-  time_start <- Sys.time()
+  time_start <- format(Sys.time(), "%Y-%m-%d %H:%M:%OS6")
   time_zone_start <- Sys.timezone()
   
   # Grab the variables passe through the URL
@@ -398,7 +398,7 @@ server <- function(input, output, session) {
   session$onSessionEnded(
     function () {
       # Add time end to the output vector
-      time_data[, "time_end"] <<- Sys.time()
+      time_data[, "time_end"] <<- format(Sys.time(), "%Y-%m-%d %H:%M:%OS6")
       
       # Turn data vectors into JSON
       choice_data <- jsonlite::toJSON(choice_data)
@@ -482,7 +482,7 @@ server <- function(input, output, session) {
     response_id <- paste0("response_", current$question)
     
     # Store the time spent on the page
-    time_data[, paste0("time_end_page_", current$page)] <<- Sys.time()
+    time_data[, paste0("time_end_page_", current$page)] <<- format(Sys.time(), "%Y-%m-%d %H:%M:%OS6")
     
     # Get the checked values at each click of the next page button to capture the last consideration set
     if (current_best || consideration_set || consideration_set_all) {
@@ -595,7 +595,7 @@ server <- function(input, output, session) {
   observeEvent(input[["next_alt"]], {
     # Get the response time at the current task and alt
     if (sequential) {
-      time_data[, paste0("time_end_task_", current$task, "_alt_", current$alt)] <<- Sys.time()
+      time_data[, paste0("time_end_task_", current$task, "_alt_", current$alt)] <<- format(Sys.time(), "%Y-%m-%d %H:%M:%OS6")
     }
     
     # Get the response_id
