@@ -358,51 +358,10 @@ server <- function(input, output, session) {
   question_data <- as_tibble(matrix(NA, nrow = 1, ncol = length(names_questions),
     dimnames = list(rownames = NA, colnames = names_questions)))
   
-  # Define the names of the attributes
-  # names_attributes <- str_c(
-  #   rep(str_c("ct", seq_len(tasks), sep = "_"), each = ((nalts - 1) * nattr)),
-  #   rep(names(choice_tasks), times = ((nalts - 1) * tasks)),
-  #   rep(rep(seq_len((nalts - 1)), each = nattr), times = tasks), sep = "_"
-  # )
-  
-  # Define the names of the consideration sets
-  # tmp <- NULL
-  # for (i in seq_len(nalts)) {
-  #   tmp <- c(tmp, paste("t", i, "considered", seq_len(i), sep = "_"))
-  # }
-  # names_consideration_sets <- paste0(rep(tmp, times = tasks), "_task_",
-  #   rep(seq_len(tasks), each = length(tmp)))
-  
-  # Define the names of the time delay
-  # names_time_delay <- paste0("time_delay_task_",
-  #   rep(seq_len(tasks), each = nalts),
-  #   "_alt_",
-  #   rep(seq_len(nalts), times = tasks))
-  
-  # Define the names of the time on each page
-  # names_time_page <- paste0("time_end_page_", seq_len(pages))
-  
-  # Define the names of the time on each alt
-  # names_alt_times <- paste0("time_end_task_",
-  #   rep(seq_len(tasks), each = nalts),
-  #   "_alt_",
-  #   rep(seq_len(nalts), times = tasks))
-  
-  # Set the names of the output vector
-  # survey_output_names <- c("respid", "treatment", names_questions, 
-  #   "time_zone_start", "time_start", names_time_page,
-  #   "time_end", names_alt_times,
-  #   names_consideration_sets, names_attributes, names_time_delay)
-  # 
-  # # Create the survey output vector to be only NA
-  # survey_output <- rep(NA, length(survey_output_names))
-  # names(survey_output) <- survey_output_names
-
   #-----------------------------------------------------------------------------
   # Add the attribute data to the vector of survey outputs and
   # empty rows to the choice_tasks (i.e. opt out)
   #-----------------------------------------------------------------------------
-  # survey_output[names_attributes] <- as.vector(t(choice_tasks))
 
   for (i in seq_len(tasks)) {
     row_index <- 1 + (i - 1) * nalts
@@ -415,18 +374,6 @@ server <- function(input, output, session) {
   names_attributes <- c("Country of origin", "Colour", "Alcohol by volume",
     "Grape variety", "Characteristic", "Organic", "Price")
   colnames(choice_tasks) <- names_attributes
-  
-  #-----------------------------------------------------------------------------
-  # Add the time_delay data to the output vector
-  #-----------------------------------------------------------------------------
-  # if (treatment %in% c(8, 9, 10)) {
-  #   survey_output[names_time_delay] <- time_delay
-  # }
-  
-  #-----------------------------------------------------------------------------
-  # Add the treatment to the output vector
-  #-----------------------------------------------------------------------------
-  # survey_output["treatment"] <- treatment
   
   #-----------------------------------------------------------------------------
   # Define a set of reactive values. Note that we start the question counter
@@ -442,7 +389,6 @@ server <- function(input, output, session) {
   
   checked <- reactiveValues()
   battery_randomized <- reactiveVal(FALSE)
-  
   
   if (treatment %in% c(8, 9, 10)) {
     # Initiate the reactive values for the timer and active
@@ -556,9 +502,6 @@ server <- function(input, output, session) {
       the_rows <- (1 + (current$task - 1) * nalts):((current$task - 1) * nalts + current$alt)
       column <- paste0("search_period_", current$alt)
       consideration_data[the_rows, column] <<- checked_values
-      
-      # Store the consideration sets
-      # survey_output[paste("t", current$alt, checkbox_names, sep = "_")] <<- checked_values
     }
     
     # Update the progressbar
@@ -676,9 +619,6 @@ server <- function(input, output, session) {
       the_rows <- (1 + (current$task - 1) * nalts):((current$task - 1) * nalts + current$alt)
       column <- paste0("search_period_", current$alt)
       consideration_data[the_rows, column] <<- checked_values
-        
-      # Store the consideration sets
-      # survey_output[paste("t", current$alt, checkbox_names, sep = "_")] <<- checked_values
     }
     
     # Manually trigger unbind-DT when the next alternative button is clicked
