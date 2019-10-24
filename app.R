@@ -269,6 +269,7 @@ server <- function(input, output, session) {
   # Define when people stopped searching- search_data
   #-----------------------------------------------------------------------------
   search_data <- tibble(
+    id = resp_id,
     ct = seq_len(tasks),
     alts_revealed = NA
   )
@@ -277,10 +278,11 @@ server <- function(input, output, session) {
   # Define the consideration sets - consideration_data
   #-----------------------------------------------------------------------------
   rows <- nrow(choice_tasks)
-  columns <- c("ct", "alt", paste0("search_period_", seq_len(tasks)))
+  columns <- c("id", "ct", "alt", paste0("search_period_", seq_len(tasks)))
   
   consideration_data <- matrix(NA, nrow = nalts*tasks, ncol = length(columns))
   colnames(consideration_data) <- columns
+  consideration_data[, "id"] <- rep(resp_id, times = (tasks * nalts))
   consideration_data[, "ct"] <- rep(seq_len(tasks), each = (nalts))
   consideration_data[, "alt"] <- rep(seq_len(nalts ), times = tasks)
   consideration_data <- as_tibble(consideration_data)
@@ -289,6 +291,7 @@ server <- function(input, output, session) {
   # Define the time delay - time_delay_data
   #-----------------------------------------------------------------------------
   time_delay_data <- tibble(
+    id = resp_id,
     ct = rep(seq_len(tasks), each = (nalts)),
     alt = rep(seq_len(nalts ), times = tasks),
     time_delay = time_delay
@@ -306,10 +309,11 @@ server <- function(input, output, session) {
     "_alt_",
     rep(seq_len(nalts), times = tasks))
   
-  names_time <- c("time_zone_start", "time_start", names_time_page, names_alt_times, "time_end")
+  names_time <- c("id", "time_zone_start", "time_start", names_time_page, names_alt_times, "time_end")
   time_data <- as_tibble(matrix(NA, nrow = 1, ncol = length(names_time),
     dimnames = list(rownames = NA, colnames = names_time)))
   
+  time_data[, "id"] <- resp_id
   time_data[, "time_zone_start"] <- time_zone_start
   time_data[, "time_start"] <- time_start
   
@@ -368,8 +372,10 @@ server <- function(input, output, session) {
     }
   }
   
+  names_questions <- c("id", names_questions)
   question_data <- as_tibble(matrix(NA, nrow = 1, ncol = length(names_questions),
     dimnames = list(rownames = NA, colnames = names_questions)))
+  question_data[, "id"] <- resp_id
   
   #-----------------------------------------------------------------------------
   # Define a set of reactive values. Note that we start the question counter
