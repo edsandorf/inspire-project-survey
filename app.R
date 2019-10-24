@@ -425,8 +425,8 @@ server <- function(input, output, session) {
         )
       
       # Send the data to the database
-      write.csv(survey_output, "test.csv")
-      # save_db(survey_output, "test_db", db_config)
+      # write.csv(survey_output, "test.csv")
+      save_db(survey_output, "data_table", db_config)
     }
   )
   
