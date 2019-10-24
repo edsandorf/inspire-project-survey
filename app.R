@@ -244,7 +244,7 @@ server <- function(input, output, session) {
       alt_order = rep(sample(seq_len((nalts - 1))), times = tasks)) %>%
     arrange(ct_order, alt_order) %>%
     select(-ct_order, -alt_order)
-  
+
   # Set up data to send to database
   choice_data <- choice_tasks %>%
     mutate(id = resp_id,
@@ -270,22 +270,8 @@ server <- function(input, output, session) {
   colnames(consideration_data) <- columns
   consideration_data[, "ct"] <- rep(seq_len(tasks), each = (nalts))
   consideration_data[, "alt"] <- rep(seq_len(nalts ), times = tasks)
-  
-  # consideration_data <- tibble(
-  #   ct = rep(seq_len(tasks), each = (nalts)),
-  #   alt = rep(seq_len(nalts ), times = tasks),
-  #   search_period_1 = rep(NA, length(alt)),
-  #   search_period_2 = rep(NA, length(alt)),
-  #   search_period_3 = rep(NA, length(alt)),
-  #   search_period_4 = rep(NA, length(alt)),
-  #   search_period_5 = rep(NA, length(alt)),
-  #   search_period_6 = rep(NA, length(alt)),
-  #   search_period_7 = rep(NA, length(alt)),
-  #   search_period_8 = rep(NA, length(alt)),
-  #   search_period_9 = rep(NA, length(alt)),
-  #   search_period_10 = rep(NA, length(alt))
-  # )
-  
+  consideration_data <- as_tibble(consideration_data)
+
   #-----------------------------------------------------------------------------
   # Define the time delay - time_delay_data
   #-----------------------------------------------------------------------------
