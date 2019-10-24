@@ -245,12 +245,25 @@ server <- function(input, output, session) {
     arrange(ct_order, alt_order) %>%
     select(-ct_order, -alt_order)
 
+  # Add the SQ to the data before sending it to the database
+  for (i in seq_len(tasks)) {
+    row_index <- 1 + (i - 1) * nalts
+    choice_tasks <- choice_tasks %>%
+      add_row(country = "", color = "", alcohol = "", grape = "",
+        characteristic = "", organic = "", price = "", .before = row_index)
+  }
+  
   # Set up data to send to database
   choice_data <- choice_tasks %>%
     mutate(id = resp_id,
       treatment = treatment,
-      ct = rep(seq_len(tasks), each = (nalts - 1)),
-      alt = rep(seq_len(nalts - 1), times = tasks))
+      ct = rep(seq_len(tasks), each = nalts),
+      alt = rep(seq_len(nalts), times = tasks))
+  
+  # Update attribute names for display
+  names_attributes <- c("Country of origin", "Colour", "Alcohol by volume",
+    "Grape variety", "Characteristic", "Organic", "Price")
+  colnames(choice_tasks) <- names_attributes
   
   #-----------------------------------------------------------------------------
   # Define when people stopped searching- search_data
@@ -357,23 +370,6 @@ server <- function(input, output, session) {
   
   question_data <- as_tibble(matrix(NA, nrow = 1, ncol = length(names_questions),
     dimnames = list(rownames = NA, colnames = names_questions)))
-  
-  #-----------------------------------------------------------------------------
-  # Add the attribute data to the vector of survey outputs and
-  # empty rows to the choice_tasks (i.e. opt out)
-  #-----------------------------------------------------------------------------
-
-  for (i in seq_len(tasks)) {
-    row_index <- 1 + (i - 1) * nalts
-    choice_tasks <- choice_tasks %>%
-      add_row(country = "", color = "", alcohol = "", grape = "",
-        characteristic = "", organic = "", price = "", .before = row_index)
-  }
-
-  # Update attribute names for display
-  names_attributes <- c("Country of origin", "Colour", "Alcohol by volume",
-    "Grape variety", "Characteristic", "Organic", "Price")
-  colnames(choice_tasks) <- names_attributes
   
   #-----------------------------------------------------------------------------
   # Define a set of reactive values. Note that we start the question counter
