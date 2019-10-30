@@ -100,11 +100,20 @@ server <- function(input, output, session) {
   time_start <- format(Sys.time(), "%Y-%m-%d %H:%M:%OS6")
   time_zone_start <- Sys.timezone()
   
-  # Grab the variables passe through the URL
+  # Set the treatment to NULL 
+  treatment <- NULL
+  
+  # Grab the variables passed through the URL
   url_vars <- NULL
   observe({
     url_vars <<- parseQueryString(session$clientData$url_search)
   })
+  
+  survey_id <- NA
+  if (!is.null(url_vars)) {
+    survey_id <- url_vars[["id"]]
+    treatment <- url_vars[["treatment"]]
+  }
   
   # Generate a survey specific ID number
   resp_id <- paste0(sample(c(letters, LETTERS, 0:9), 10), collapse = "")
@@ -112,14 +121,12 @@ server <- function(input, output, session) {
     tags$p(paste0("Your unique respondent ID is: ", resp_id))
   })
   
-  # Add exit URL
-  exit_url <- paste0("https://inspire-project.info/?id=", resp_id, "&?test=", 8)
-  
   #-----------------------------------------------------------------------------
   # Define treatments and randomly allocate respondents
   #-----------------------------------------------------------------------------
-  # treatment <- 6
-  treatment <- sample(1:10, 1)
+  if (is.null(treatment)) {
+    treatment <- sample(1:10, 1)
+  }
   
   # Standard choice task with 3 alternatives
   if (treatment == 1) {
@@ -372,10 +379,11 @@ server <- function(input, output, session) {
     }
   }
   
-  names_questions <- c("id", names_questions)
+  names_questions <- c("survey_id", "id", names_questions)
   question_data <- as_tibble(matrix(NA, nrow = 1, ncol = length(names_questions),
     dimnames = list(rownames = NA, colnames = names_questions)))
   question_data[, "id"] <- resp_id
+  question_data[, "survey_id"] <- survey_id
   
   #-----------------------------------------------------------------------------
   # Define a set of reactive values. Note that we start the question counter
@@ -397,6 +405,11 @@ server <- function(input, output, session) {
     timer <- reactiveVal(time_delay[1])
     active <- reactiveVal(TRUE)
   }
+  
+  #-----------------------------------------------------------------------------
+  # Create the exit URL
+  #-----------------------------------------------------------------------------
+  exit_url <- paste0("https://inspire-project.info/?id=", survey_id, "&?treatment=", treatment)
   
   #-----------------------------------------------------------------------------
   # Define what happens when the session ends
