@@ -861,7 +861,7 @@ server <- function(input, output, session) {
             if (current$alt == 1) {
               rownames(task_matrix) <- paste0("I would not buy wine for this occasion")
             } else {
-              rownames(task_matrix) <- c(paste0("I would not buy any of these wines for this occasion"), 
+              rownames(task_matrix) <- c(paste0("I would not buy any of these wines for this occasion"),
                 paste0("Bottle ", seq_len(current$alt - 1)))
             }
             
@@ -883,13 +883,14 @@ server <- function(input, output, session) {
                      paste0("$this.attr('id', ", paste0("\'", response_id, "\'"),");"),
                      paste0("$this.prop('checked', false);"),
                      "$this.addClass('shiny-input-radiogroup');
-                     Shiny.bindAll(this.api().table().node());}"
-              ))
-            )
-          ) # End renderDT
-        }
-      })
-    })
+                     Shiny.bindAll(this.api().table().node());
+                     $.fn.dataTableExt.errMode = 'none';}"
+              )) #  End DT::JS
+            ) #  End options list
+          ) #  End renderDT
+        } #  End if (choice_task)
+      }) #  End Local
+    }) #  End observe event
   
   #-----------------------------------------------------------------------------
   # What happens when the time left changes
