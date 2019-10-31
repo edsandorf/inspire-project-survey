@@ -103,19 +103,14 @@ server <- function(input, output, session) {
   
   # Set the treatment and survey_id to NA to capture the case where vars are not
   # passed through the URL
-  treatment <- NA
-  survey_id <- NA
   observe({
     query <- parseQueryString(session$clientData$url_search)
     
     # Survey identification
     if (!is.null(query[["id"]])) {
       survey_id <<- query[["id"]]
-    }
-    
-    # Treatment
-    if (!is.null(query[["treatment"]])) {
-      treatment <<- query[["treatment"]]
+    } else {
+      survey_id <<- "Not captured"
     }
   })
   
@@ -386,7 +381,7 @@ server <- function(input, output, session) {
     }
   }
   
-  names_questions <- c("survey_id", "id", names_questions)
+  names_questions <- c("id", names_questions)
   question_data <- as_tibble(matrix(NA, nrow = 1, ncol = length(names_questions),
     dimnames = list(rownames = NA, colnames = names_questions)))
   question_data[, "id"] <- resp_id
@@ -419,8 +414,7 @@ server <- function(input, output, session) {
     function () {
       # Add time end to the output vector
       time_data[, "time_end"] <<- format(Sys.time(), "%Y-%m-%d %H:%M:%OS6")
-      question_data[, "survey_id"] <<- survey_id
-      
+
       # Turn data vectors into JSON
       choice_data <- jsonlite::toJSON(choice_data)
       search_data <- jsonlite::toJSON(search_data)
@@ -431,12 +425,12 @@ server <- function(input, output, session) {
       
       survey_output <- c(
         choice_data, search_data, consideration_data, time_delay_data, time_data,
-        question_data
+        question_data, survey_id
         )
       
       names(survey_output) <- c(
         "choice_data", "search_data", "consideration_data", "time_delay_data",
-        "time_data", "question_data"
+        "time_data", "question_data", "survey_id"
         )
       
       # Send the data to the database
@@ -501,7 +495,7 @@ server <- function(input, output, session) {
     question_type <- dplyr::pull(outline, question_type)[current$page]
     question_id <- dplyr::pull(outline, question_id)[current$page]
     response_id <- paste0("response_", current$question)
-    
+
     # Store the time spent on the page
     time_data[, paste0("time_end_page_", current$page)] <<- format(Sys.time(), "%Y-%m-%d %H:%M:%OS6")
     
@@ -582,7 +576,7 @@ server <- function(input, output, session) {
     current$page <- current$page + 1
     
     
-    if (current$task < 10) current$alt <- 1
+    if (current$task < 11) current$alt <- 1
     
     # Update the page_type and question_type 
     page_type <- dplyr::pull(outline, page_type)[current$page]
