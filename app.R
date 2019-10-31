@@ -413,11 +413,6 @@ server <- function(input, output, session) {
   }
   
   #-----------------------------------------------------------------------------
-  # Create the exit URL
-  #-----------------------------------------------------------------------------
-  exit_url <- paste0("https://inspire-project.info/?id=", survey_id, "&treatment=", treatment)
-  
-  #-----------------------------------------------------------------------------
   # Define what happens when the session ends
   #-----------------------------------------------------------------------------
   session$onSessionEnded(
@@ -1270,6 +1265,7 @@ server <- function(input, output, session) {
     if (page_type == "final_page") {
       # Hide the 'next_page' button
       shinyjs::hideElement("next_page")
+      exit_url <- paste0("https://inspire-project.info/?id=", survey_id, "&treatment=", treatment)
       
       return(
         shiny::withTags(
