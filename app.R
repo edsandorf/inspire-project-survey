@@ -132,8 +132,8 @@ server <- function(input, output, session) {
   #-----------------------------------------------------------------------------
   # Define treatments and randomly allocate respondents
   #-----------------------------------------------------------------------------
-  # treatment <- sample(1:10, 1)
-  treatment <- 4
+  treatment <- sample(1:10, 1)
+  # treatment <- 4
   
   # Standard choice task with 3 alternatives
   if (treatment == 1) {
