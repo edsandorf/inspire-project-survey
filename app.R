@@ -78,7 +78,8 @@ ui <- fluidPage(theme = "master.css",
       
       fluidRow(class = "funder-panel",
         column(12,
-          uiOutput("resp_id")))
+          uiOutput("resp_id"),
+          uiOutput("url_vars")))
     )
   )
 )
@@ -100,20 +101,27 @@ server <- function(input, output, session) {
   time_start <- format(Sys.time(), "%Y-%m-%d %H:%M:%OS6")
   time_zone_start <- Sys.timezone()
   
-  # Set the treatment to NULL 
-  treatment <- NULL
-  
-  # Grab the variables passed through the URL
-  url_vars <- NULL
+  # Set the treatment and survey_id to NA to capture the case where vars are not
+  # passed through the URL
+  treatment <- NA
+  survey_id <- NA
   observe({
-    url_vars <<- parseQueryString(session$clientData$url_search)
+    query <- parseQueryString(session$clientData$url_search)
+    
+    # Survey identification
+    if (!is.null(query[["id"]])) {
+      survey_id <<- query[["id"]]
+    }
+    
+    # Treatment
+    if (!is.null(query[["treatment"]])) {
+      treatment <<- query[["treatment"]]
+    }
   })
   
-  survey_id <- NA
-  if (!is.null(url_vars)) {
-    survey_id <- url_vars[["id"]]
-    treatment <- url_vars[["treatment"]]
-  }
+  output$url_vars <- renderUI({
+    tags$p(paste0("For testing only! Your survey-company ID: ", survey_id))
+  })
   
   # Generate a survey specific ID number
   resp_id <- paste0(sample(c(letters, LETTERS, 0:9), 10), collapse = "")
@@ -124,9 +132,8 @@ server <- function(input, output, session) {
   #-----------------------------------------------------------------------------
   # Define treatments and randomly allocate respondents
   #-----------------------------------------------------------------------------
-  if (is.null(treatment)) {
-    treatment <- sample(1:10, 1)
-  }
+  # treatment <- sample(1:10, 1)
+  treatment <- 4
   
   # Standard choice task with 3 alternatives
   if (treatment == 1) {
@@ -383,7 +390,6 @@ server <- function(input, output, session) {
   question_data <- as_tibble(matrix(NA, nrow = 1, ncol = length(names_questions),
     dimnames = list(rownames = NA, colnames = names_questions)))
   question_data[, "id"] <- resp_id
-  question_data[, "survey_id"] <- survey_id
   
   #-----------------------------------------------------------------------------
   # Define a set of reactive values. Note that we start the question counter
@@ -409,7 +415,7 @@ server <- function(input, output, session) {
   #-----------------------------------------------------------------------------
   # Create the exit URL
   #-----------------------------------------------------------------------------
-  exit_url <- paste0("https://inspire-project.info/?id=", survey_id, "&?treatment=", treatment)
+  exit_url <- paste0("https://inspire-project.info/?id=", survey_id, "&treatment=", treatment)
   
   #-----------------------------------------------------------------------------
   # Define what happens when the session ends
@@ -418,6 +424,7 @@ server <- function(input, output, session) {
     function () {
       # Add time end to the output vector
       time_data[, "time_end"] <<- format(Sys.time(), "%Y-%m-%d %H:%M:%OS6")
+      question_data[, "survey_id"] <<- survey_id
       
       # Turn data vectors into JSON
       choice_data <- jsonlite::toJSON(choice_data)
