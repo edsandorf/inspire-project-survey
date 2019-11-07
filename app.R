@@ -918,9 +918,9 @@ server <- function(input, output, session) {
         shiny::withTags(
           div(
             h1("Welcome"),
-            p("Thank you for your interest in this study."),
-            p("We are inviting you to take part in a research project that explores how people make decisions."),
-            p("On the next page, you will receive more information about the project and the survey. Please read the information carefully before proceeding."),
+            p("Thank you for your interest in our study, which explores how people make decisions."),
+            p("On the next page, you will receive more information about the project and the survey. Please read the information carefully before proceeding. At the bottom of the information page, you will be able to download a .pdf copy of the information to keep for your records."),
+            p("NOTE: If you are answering the survey on a mobile phone, please use landscape mode to ensure that all aspects of the survey are visible to you."),
             p(paste0("For testing purposes only! You are in treatment: ", treatment))
           )
         )
