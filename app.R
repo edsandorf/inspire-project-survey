@@ -965,7 +965,7 @@ server <- function(input, output, session) {
               p("The compensation for taking part in the survey is standard and stipulated by Savanta."),
               
               h3("Legal basis for processing personal data"),
-              p("As part of the project we will be recording personal data relating to you.  This will be processed in accordance with the General Data Protection Regulation (GDPR).  Under GDPR the legal basis for processing your personal data will be public interest/the official authority of the University. All responses will be treated confidenially and all data collected anonymised."),
+              p("As part of the project we will be recording personal data relating to you.  This will be processed in accordance with the General Data Protection Regulation (GDPR).  Under GDPR the legal basis for processing your personal data will be public interest/the official authority of the University. All responses will be treated confidentially and all data collected anonymised."),
               
               h3("What happens to the data I provide?"),
               p("The research data will be anonymised by removing any personal identifiers such as names, e-mail addresses or IP-addresses, so nothing about you will be identifiable. Your  data will be kept for two years on Research Drive, a secure data centre on the Stirling campus, and then will be lodged in DataSTORRE. The data will be kept for a minimum of 10 years after last publication or access of the data in accordance with the University of Stirling’s research data policy."),
