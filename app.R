@@ -12,6 +12,24 @@ source("global.R")
 #-------------------------------------------------------------------------------
 #
 #
+# SET UP A DB POOL FOR PERFORMANCE
+#
+#
+#-------------------------------------------------------------------------------
+db_pool <- pool::dbPool(
+  drv = RMariaDB::MariaDB(),
+  dbname = db_config$dbname,
+  host = db_config$host,
+  username = db_config$username,
+  password = db_config$password,
+  ssl.key = db_config$ssl.key,
+  ssl.cert = db_config$ssl.cert,
+  ssl.ca = db_config$ssl.ca
+)
+
+#-------------------------------------------------------------------------------
+#
+#
 #
 # USER INTERFACE
 #
@@ -101,21 +119,21 @@ server <- function(input, output, session) {
   time_start <- format(Sys.time(), "%Y-%m-%d %H:%M:%OS6")
   time_zone_start <- Sys.timezone()
   
-  # Set the treatment and survey_id to NA to capture the case where vars are not
+  # Set the treatment and panel_id to NA to capture the case where vars are not
   # passed through the URL
   observe({
     query <- parseQueryString(session$clientData$url_search)
     
     # Survey identification
     if (!is.null(query[["id"]])) {
-      survey_id <<- query[["id"]]
+      panel_id <<- query[["id"]]
     } else {
-      survey_id <<- "Not captured"
+      panel_id <<- "Not captured"
     }
   })
   
   output$url_vars <- renderUI({
-    tags$p(paste0("For testing only! Your survey-company ID: ", survey_id))
+    tags$p(paste0("For testing only! Your survey-company ID: ", panel_id))
   })
   
   # Generate a survey specific ID number
@@ -424,18 +442,18 @@ server <- function(input, output, session) {
       question_data <- jsonlite::toJSON(question_data)
       
       survey_output <- c(
-        choice_data, search_data, consideration_data, time_delay_data, time_data,
-        question_data, survey_id
+        resp_id, panel_id, choice_data, search_data, consideration_data,
+        time_delay_data, time_data, question_data
         )
       
       names(survey_output) <- c(
-        "choice_data", "search_data", "consideration_data", "time_delay_data",
-        "time_data", "question_data", "survey_id"
+        "resp_id", "panel_id", "choice_data", "search_data",
+        "consideration_data", "time_delay_data", "time_data", "question_data"
         )
       
       # Send the data to the database
       # write.csv(survey_output, "test.csv")
-      save_db(survey_output, "data_table", db_config)
+      save_db(db_pool, survey_output, "focus_groups", db_config, TRUE)
     }
   )
   
@@ -575,7 +593,6 @@ server <- function(input, output, session) {
     battery_randomized(FALSE)
     current$page <- current$page + 1
     
-    
     if (current$task < 11) current$alt <- 1
     
     # Update the page_type and question_type 
@@ -602,6 +619,35 @@ server <- function(input, output, session) {
         active(TRUE)
       }
     }
+    
+    # Send to the database
+    if ((current$page - 1) == 1) {
+      replace_val <- FALSE
+    } else {
+      replace_val <- TRUE
+    }
+    
+    # Turn data vectors into JSON
+    choice_data <- jsonlite::toJSON(choice_data)
+    search_data <- jsonlite::toJSON(search_data)
+    consideration_data <- jsonlite::toJSON(consideration_data)
+    time_delay_data <- jsonlite::toJSON(time_delay_data)
+    time_data <- jsonlite::toJSON(time_data)
+    question_data <- jsonlite::toJSON(question_data)
+    
+    survey_output <- c(
+      resp_id, panel_id, choice_data, search_data, consideration_data,
+      time_delay_data, time_data, question_data
+    )
+    
+    names(survey_output) <- c(
+      "resp_id", "panel_id", "choice_data", "search_data",
+      "consideration_data", "time_delay_data", "time_data", "question_data"
+    )
+    
+    # Send the data to the database
+    save_db(db_pool, survey_output, "focus_groups", db_config, replace_val)
+    
   })
   
   #-----------------------------------------------------------------------------
@@ -1259,7 +1305,7 @@ server <- function(input, output, session) {
     if (page_type == "final_page") {
       # Hide the 'next_page' button
       shinyjs::hideElement("next_page")
-      exit_url <- paste0("https://inspire-project.info/?id=", survey_id, "&treatment=", treatment)
+      exit_url <- paste0("https://inspire-project.info/?id=", panel_id, "&treatment=", treatment)
       
       return(
         shiny::withTags(

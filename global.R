@@ -2,7 +2,7 @@
 # Load packages
 #-------------------------------------------------------------------------------
 pkgs <- c("stringr", "shiny", "shinyjs", "shinyWidgets", "DT",
-          "RMariaDB", "config", "dplyr", "sortable", "jsonlite")
+          "RMariaDB", "config", "dplyr", "sortable", "jsonlite", "pool")
 invisible(lapply(pkgs, require, character.only = TRUE))
 
 #-------------------------------------------------------------------------------
@@ -34,30 +34,26 @@ production <- TRUE
 #-------------------------------------------------------------------------------
 # Define a function to save results to the database
 #-------------------------------------------------------------------------------
-save_db <- function (x, db_name, db_config) {
-  # Connect to the database
-  db <- RMariaDB::dbConnect(RMariaDB::MariaDB(),
-                            dbname = db_config$dbname,
-                            host = db_config$host,
-                            username = db_config$username,
-                            password = db_config$password,
-                            ssl.key = db_config$ssl.key,
-                            ssl.cert = db_config$ssl.cert,
-                            ssl.ca = db_config$ssl.ca)
-  
+save_db <- function (db_pool, x, db_name, db_config, replace_val) {
   # Construct the DB query to be sent to the database
-  query <- sprintf(
-    "INSERT INTO %s (%s) VALUES ('%s')",
-    db_name,
-    paste(names(x), collapse = ", "),
-    paste(x, collapse = "', '")
-  )
+  if (!replace_val) {
+    query <- sprintf(
+      "INSERT INTO %s (%s) VALUES ('%s')",
+      db_name,
+      paste(names(x), collapse = ", "),
+      paste(x, collapse = "', '")
+    )
+  } else {
+    query <- sprintf(
+      "UPDATE %s SET %s WHERE %s;",
+      db_name,
+      paste(paste0(names(x)[-1], " = \'", x[-1], "\'"), collapse = ", "),
+      paste0(names(x)[1], " = \'", x[1], "\'")
+    )
+  }
   
   # Submit the insert query to the database via the opened connection
-  RMariaDB::dbExecute(db, query)
-  
-  # Close the database connection
-  on.exit(RMariaDB::dbDisconnect(db))
+  RMariaDB::dbExecute(db_pool, query)
 }
 
 #-------------------------------------------------------------------------------
