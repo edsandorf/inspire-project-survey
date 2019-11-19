@@ -130,6 +130,7 @@ server <- function(input, output, session) {
     } else {
       panel_id <<- "Not captured"
     }
+    panel_id_db <<- jsonlite::toJSON(panel_id)
   })
   
   output$url_vars <- renderUI({
@@ -138,6 +139,8 @@ server <- function(input, output, session) {
   
   # Generate a survey specific ID number
   resp_id <- paste0(sample(c(letters, LETTERS, 0:9), 10), collapse = "")
+  resp_id_db <- jsonlite::toJSON(resp_id)
+  
   output$resp_id <- renderUI({
     tags$p(paste0("Your unique respondent ID is: ", resp_id))
   })
@@ -442,7 +445,7 @@ server <- function(input, output, session) {
       question_data <- jsonlite::toJSON(question_data)
       
       survey_output <- c(
-        resp_id, panel_id, choice_data, search_data, consideration_data,
+        resp_id_db, panel_id_db, choice_data, search_data, consideration_data,
         time_delay_data, time_data, question_data
         )
       
@@ -636,7 +639,7 @@ server <- function(input, output, session) {
     question_data <- jsonlite::toJSON(question_data)
     
     survey_output <- c(
-      resp_id, panel_id, choice_data, search_data, consideration_data,
+      resp_id_db, panel_id_db, choice_data, search_data, consideration_data,
       time_delay_data, time_data, question_data
     )
     
