@@ -119,22 +119,8 @@ server <- function(input, output, session) {
   time_start <- format(Sys.time(), "%Y-%m-%d %H:%M:%OS6")
   time_zone_start <- Sys.timezone()
   
-  # Set the treatment and panel_id to NA to capture the case where vars are not
-  # passed through the URL
-  observe({
-    query <- parseQueryString(session$clientData$url_search)
-    
-    # Survey identification
-    if (!is.null(query[["id"]])) {
-      panel_id <<- query[["id"]]
-    } else {
-      panel_id <<- "Not captured"
-    }
-    panel_id_db <<- jsonlite::toJSON(panel_id)
-  })
-  
   output$url_vars <- renderUI({
-    tags$p(paste0("For testing only! Your survey-company ID: ", panel_id))
+    tags$p(paste0("For testing only! Your survey-company ID: ", panel_id()))
   })
   
   # Generate a survey specific ID number
@@ -422,6 +408,8 @@ server <- function(input, output, session) {
   checked <- reactiveValues()
   battery_randomized <- reactiveVal(FALSE)
   
+  panel_id <- reactiveVal("Not captured")
+  
   if (treatment %in% c(8, 9, 10)) {
     # Initiate the reactive values for the timer and active
     timer <- reactiveVal(time_delay[1])
@@ -437,6 +425,7 @@ server <- function(input, output, session) {
       time_data[, "time_end"] <<- format(Sys.time(), "%Y-%m-%d %H:%M:%OS6")
 
       # Turn data vectors into JSON
+      panel_id_db <- jsonlite::toJSON(panel_id())
       choice_data <- jsonlite::toJSON(choice_data)
       search_data <- jsonlite::toJSON(search_data)
       consideration_data <- jsonlite::toJSON(consideration_data)
@@ -626,11 +615,22 @@ server <- function(input, output, session) {
     # Send to the database
     if ((current$page - 1) == 1) {
       replace_val <- FALSE
+      
+      observe({
+        query <- parseQueryString(isolate(session$clientData$url_search))
+        
+        # Survey identification
+        if (!is.null(query[["id"]])) {
+          panel_id(query[["id"]])
+        } 
+        
+      })
     } else {
       replace_val <- TRUE
     }
     
     # Turn data vectors into JSON
+    panel_id_db <- jsonlite::toJSON(panel_id())
     choice_data <- jsonlite::toJSON(choice_data)
     search_data <- jsonlite::toJSON(search_data)
     consideration_data <- jsonlite::toJSON(consideration_data)
@@ -1308,7 +1308,7 @@ server <- function(input, output, session) {
     if (page_type == "final_page") {
       # Hide the 'next_page' button
       shinyjs::hideElement("next_page")
-      exit_url <- paste0("https://inspire-project.info/?id=", panel_id, "&treatment=", treatment)
+      exit_url <- paste0("https://inspire-project.info/?id=", panel_id(), "&treatment=", treatment)
       
       return(
         shiny::withTags(
