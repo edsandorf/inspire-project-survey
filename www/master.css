@@ -68,6 +68,11 @@ body {
     width: 50px;
 }
 
+.highlight td {
+  background-color: #F5F5F5;
+}
+
+
 .panel-next-page {
   margin-top: 20px;
   margin-bottom: 20px;

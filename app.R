@@ -265,8 +265,8 @@ server <- function(input, output, session) {
   for (i in seq_len(tasks)) {
     row_index <- 1 + (i - 1) * nalts
     choice_tasks <- choice_tasks %>%
-      add_row(country = "", color = "", alcohol = "", grape = "",
-        characteristic = "", organic = "", price = "", .before = row_index)
+      add_row(country = "", color = "I", alcohol = "would", grape = "not buy",
+        characteristic = "wine for this", organic = "occasion", price = "", .before = row_index)
   }
   
   # Set up data to send to database
@@ -277,8 +277,8 @@ server <- function(input, output, session) {
       alt = rep(seq_len(nalts), times = tasks))
   
   # Update attribute names for display
-  names_attributes <- c("Country of origin", "Colour", "Alcohol by volume",
-    "Grape variety", "Characteristic", "Organic", "Price")
+  names_attributes <- c("<b>Country of origin</b>", "<b>Colour</b>", "<b>Alcohol by volume</b>",
+    "<b>Grape variety</b>", "<b>Characteristic</b>", "<b>Organic</b>", "<b>Price</b>")
   colnames(choice_tasks) <- names_attributes
   
   #-----------------------------------------------------------------------------
@@ -895,20 +895,22 @@ server <- function(input, output, session) {
             # Combine with radio buttons and set dimension names
             names_tmp <- colnames(task_matrix)
             task_matrix <- cbind(task_matrix, radio_choice)
-            colnames(task_matrix) <- c(names_tmp, "I choose")
+            colnames(task_matrix) <- c(names_tmp, "<b>I choose</b>")
             if (current$alt == 1) {
-              rownames(task_matrix) <- paste0("I would not buy wine for this occasion")
+              # rownames(task_matrix) <- paste0("I would not buy wine for this occasion")
+              rownames(task_matrix) <- paste0(" ")
             } else {
-              rownames(task_matrix) <- c(paste0("I would not buy any of these wines for this occasion"),
+              # rownames(task_matrix) <- c(paste0("I would not buy any of these wines for this occasion"),
+              rownames(task_matrix) <- c(paste0(" "),
                 paste0("Bottle ", seq_len(current$alt - 1)))
             }
             
             # Return the matrix
             t(task_matrix)
             
-          }, escape = FALSE, server = FALSE, selection = "none",
+          }, escape = FALSE, server = FALSE, selection = "none", class = c("hover nowrap"),
           options = list(
-            dom = "t", paging = FALSE, ordering = FALSE,
+            dom = "t", paging = FALSE, ordering = FALSE, scrollX = TRUE,
             columnDefs = list(list(className = "dt-center", targets = seq_len(current$alt))),
             preDrawCallback = DT::JS(
               'function() { 
@@ -921,6 +923,8 @@ server <- function(input, output, session) {
                      paste0("$this.attr('id', ", paste0("\'", response_id, "\'"),");"),
                      paste0("$this.prop('checked', false);"),
                      "$this.addClass('shiny-input-radiogroup');
+                     var objRow= $('table tbody tr:last');
+                     $(objRow).addClass('highlight');
                      Shiny.bindAll(this.api().table().node());
                      $.fn.dataTableExt.errMode = 'none';}"
               )) #  End DT::JS
