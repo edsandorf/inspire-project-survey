@@ -68,10 +68,13 @@ body {
     width: 50px;
 }
 
-.highlight td {
-  background-color: #F5F5F5;
+td.highlight {
+  background-color: #F5F5F5 !important;
 }
 
+tr.highlight {
+  background-color: #F5F5F5 !important;
+}
 
 .panel-next-page {
   margin-top: 20px;

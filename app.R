@@ -265,8 +265,8 @@ server <- function(input, output, session) {
   for (i in seq_len(tasks)) {
     row_index <- 1 + (i - 1) * nalts
     choice_tasks <- choice_tasks %>%
-      add_row(country = "", color = "I", alcohol = "would", grape = "not buy",
-        characteristic = "wine for this", organic = "occasion", price = "", .before = row_index)
+      add_row(country = "", color = "I", alcohol = "would not", grape = "buy any of",
+        characteristic = "these wines for", organic = "this occasion", price = "", .before = row_index)
   }
   
   # Set up data to send to database
@@ -908,7 +908,21 @@ server <- function(input, output, session) {
             # Return the matrix
             t(task_matrix)
             
-          }, escape = FALSE, server = FALSE, selection = "none", class = c("hover nowrap"),
+          }, escape = FALSE, server = FALSE, selection = "none", class = c("nowrap"),
+          callback = DT::JS(paste0("
+          var last_col = null;
+          table.on('mouseenter', 'td', function() {
+            var td = $(this);
+            var col_index = table.cell(this).index().columnVisible;
+            if (col_index !== last_col) {
+              $(table.cells().nodes()).removeClass('highlight');
+              $(table.column(col_index).nodes()).addClass('highlight');
+            }
+          });
+          table.on('mouseleave', function() {
+            $(table.cells().nodes()).removeClass('highlight');
+          });
+          ")),
           options = list(
             dom = "t", paging = FALSE, ordering = FALSE, scrollX = TRUE,
             columnDefs = list(list(className = "dt-center", targets = seq_len(current$alt))),
@@ -924,8 +938,8 @@ server <- function(input, output, session) {
                      paste0("$this.prop('checked', false);"),
                      "$this.addClass('shiny-input-radiogroup');
                      var objRow= $('table tbody tr:last');
-                     $(objRow).addClass('highlight');
-                     Shiny.bindAll(this.api().table().node());
+                     $(objRow).addClass('highlight');",
+                     "Shiny.bindAll(this.api().table().node());
                      $.fn.dataTableExt.errMode = 'none';}"
               )) #  End DT::JS
             ) #  End options list
@@ -933,6 +947,11 @@ server <- function(input, output, session) {
         } #  End if (choice_task)
       }) #  End Local
     }) #  End observe event
+  
+
+
+  
+  
   
   #-----------------------------------------------------------------------------
   # What happens when the time left changes
