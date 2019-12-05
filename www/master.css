@@ -76,6 +76,11 @@ tr.highlight {
   background-color: #F5F5F5 !important;
 }
 
+.char-tab {
+  /*display:inline-block;*/
+  margin: 0 auto;
+}
+
 .panel-next-page {
   margin-top: 20px;
   margin-bottom: 20px;
