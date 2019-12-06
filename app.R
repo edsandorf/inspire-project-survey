@@ -73,7 +73,7 @@ ui <- fluidPage(theme = "master.css",
           uiOutput("user_interface"),
           # Button to reveal the next alternative
           shinyWidgets::actionBttn(inputId = "next_alt",
-            label = "See another bottle of wine",
+            label = "Search for another bottle of wine",
             style = "material-flat",
             color = "success"),
           
