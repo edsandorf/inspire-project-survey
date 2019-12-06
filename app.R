@@ -266,7 +266,7 @@ server <- function(input, output, session) {
     row_index <- 1 + (i - 1) * nalts
     choice_tasks <- choice_tasks %>%
       add_row(country = "", color = "I", alcohol = "would not", grape = "buy any of",
-        characteristic = "these wines for", organic = "this occasion", price = "", .before = row_index)
+        characteristic = "these wines on", organic = "this occasion", price = "", .before = row_index)
   }
   
   # Set up data to send to database
