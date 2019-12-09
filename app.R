@@ -940,18 +940,14 @@ server <- function(input, output, session) {
                      var objRow= $('table tbody tr:last');
                      $(objRow).addClass('highlight');",
                      "Shiny.bindAll(this.api().table().node());
-                     $.fn.dataTableExt.errMode = 'none';}"
+                     $.fn.dataTableExt.errMode = 'none';
+                  }"
               )) #  End DT::JS
             ) #  End options list
           ) #  End renderDT
         } #  End if (choice_task)
       }) #  End Local
     }) #  End observe event
-  
-
-
-  
-  
   
   #-----------------------------------------------------------------------------
   # What happens when the time left changes
