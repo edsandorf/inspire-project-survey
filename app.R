@@ -897,9 +897,9 @@ server <- function(input, output, session) {
             task_matrix <- cbind(task_matrix, radio_choice)
             colnames(task_matrix) <- c(names_tmp, "<b>I choose</b>")
             if (current$alt == 1) {
-              rownames(task_matrix) <- paste0(" ")
+              rownames(task_matrix) <- "<p style = \"color: white;\">B</p>" # Hack to keep a white letter at the top for spacing
             } else {
-              rownames(task_matrix) <- c(paste0(" "),
+              rownames(task_matrix) <- c(paste0("<p style = \"color: white;\">B</p>"),
                 paste0("Bottle ", seq_len(current$alt - 1)))
             }
             
