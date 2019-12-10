@@ -878,9 +878,9 @@ server <- function(input, output, session) {
               names_tmp <- colnames(task_matrix)
               task_matrix <- cbind(task_matrix, checkboxes)
               if (current_best) {
-                colnames(task_matrix) <- c(names_tmp, "I am considering this option")
+                colnames(task_matrix) <- c(names_tmp, "<b>I am considering this option</b>")
               } else {
-                colnames(task_matrix) <- c(names_tmp, "I am considering these options")
+                colnames(task_matrix) <- c(names_tmp, "<b>I am considering these options</b>")
               }
             }
             
