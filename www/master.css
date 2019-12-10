@@ -81,6 +81,15 @@ tr.highlight {
   margin: 0 auto;
 }
 
+.table-cell {
+    border: 1px solid #555;
+    height: 17px;
+    width: 17px;
+    display: inline-block;
+    margin: 0px;
+    padding: 0px;
+}
+
 .panel-next-page {
   margin-top: 20px;
   margin-bottom: 20px;
