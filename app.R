@@ -897,10 +897,8 @@ server <- function(input, output, session) {
             task_matrix <- cbind(task_matrix, radio_choice)
             colnames(task_matrix) <- c(names_tmp, "<b>I choose</b>")
             if (current$alt == 1) {
-              # rownames(task_matrix) <- paste0("I would not buy wine for this occasion")
               rownames(task_matrix) <- paste0(" ")
             } else {
-              # rownames(task_matrix) <- c(paste0("I would not buy any of these wines for this occasion"),
               rownames(task_matrix) <- c(paste0(" "),
                 paste0("Bottle ", seq_len(current$alt - 1)))
             }
@@ -910,39 +908,40 @@ server <- function(input, output, session) {
             
           }, escape = FALSE, server = FALSE, selection = "none", class = c("nowrap"),
           callback = DT::JS(paste0("
-          var last_col = null;
-          table.on('mouseenter', 'td', function() {
-            var td = $(this);
-            var col_index = table.cell(this).index().columnVisible;
-            if (col_index !== last_col) {
+            var last_col = null;
+            table.on('mouseenter', 'td', function() {
+              var td = $(this);
+              var col_index = table.cell(this).index().columnVisible;
+              if (col_index !== last_col) {
+                $(table.cells().nodes()).removeClass('highlight');
+                $(table.column(col_index).nodes()).addClass('highlight');
+              }
+            });
+            
+            table.on('mouseleave', function() {
               $(table.cells().nodes()).removeClass('highlight');
-              $(table.column(col_index).nodes()).addClass('highlight');
-            }
-          });
-          table.on('mouseleave', function() {
-            $(table.cells().nodes()).removeClass('highlight');
-          });
+            });
+            
           ")),
           options = list(
             dom = "t", paging = FALSE, ordering = FALSE, scrollX = TRUE,
             columnDefs = list(list(className = "dt-center", targets = seq_len(current$alt))),
-            preDrawCallback = DT::JS(
-              'function() { 
-              Shiny.unbindAll(this.api().table().node()); }'),
             drawCallback = DT::JS(
-              paste0("function() {",
-                     paste0("var $radio_row = $(\"tr:has(input[name =", paste0("\'", response_id, "\'") ," ])\");"), 
-                     "var $row = this.api().table().rows($radio_row);
-                     var $this = $($row.nodes(0));",
-                     paste0("$this.attr('id', ", paste0("\'", response_id, "\'"),");"),
-                     paste0("$this.prop('checked', false);"),
-                     "$this.addClass('shiny-input-radiogroup');
-                     var objRow= $('table tbody tr:last');
-                     $(objRow).addClass('highlight');",
-                     "Shiny.bindAll(this.api().table().node());
-                     $.fn.dataTableExt.errMode = 'none';
-                  }"
-              )) #  End DT::JS
+              paste0("function() {
+                      Shiny.unbindAll(this.api().table().node()); ",
+                      paste0("var $radio_row = $(\"tr:has(input[name =", paste0("\'", response_id, "\'") ," ])\");"), 
+                      "var $row = this.api().table().rows($radio_row);
+                      var $this = $($row.nodes(0));",
+                      paste0("$this.attr('id', ", paste0("\'", response_id, "\'"),");"),
+                      paste0("$this.prop('checked', false);"),
+                      "$this.addClass('shiny-input-radiogroup');
+                      var objRow= $('table tbody tr:last');
+                      $(objRow).addClass('highlight');",
+                      "Shiny.bindAll(this.api().table().node());
+                      $.fn.dataTableExt.errMode = 'none';
+                    }"
+                ) # End paste0()
+              ) #  End DT::JS
             ) #  End options list
           ) #  End renderDT
         } #  End if (choice_task)
