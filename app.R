@@ -984,6 +984,11 @@ server <- function(input, output, session) {
     shinyjs::hideElement("download_info_bttn")
   
     if (page_type == "first_page") {
+      # Toggle observer to make sure button is always enabled text pages
+      observe({
+        shinyjs::toggleState("next_page", condition = TRUE)
+      })
+      
       return(
         shiny::withTags(
           div(
@@ -1008,6 +1013,11 @@ server <- function(input, output, session) {
           file.copy(file.path("www", "participant-information-sheet-survey.pdf"), file)
         }
       )
+      
+      # Toggle observer to make sure button is always enabled text pages
+      observe({
+        shinyjs::toggleState("next_page", condition = TRUE)
+      })
       
       return(
         shiny::withTags({
@@ -1106,6 +1116,11 @@ server <- function(input, output, session) {
     } # End consent page
     
     if (page_type == "section_1") {
+      # Toggle observer to make sure button is always enabled text pages
+      observe({
+        shinyjs::toggleState("next_page", condition = TRUE)
+      })
+      
       return(
         shiny::withTags(
           div(
@@ -1117,6 +1132,11 @@ server <- function(input, output, session) {
     } # End section 1 info page
     
     if (page_type == "section_2") {
+      # Toggle observer to make sure button is always enabled text pages
+      observe({
+        shinyjs::toggleState("next_page", condition = TRUE)
+      })
+      
       return(
         shiny::withTags(
           div(
@@ -1140,6 +1160,11 @@ server <- function(input, output, session) {
     } # End section 2 info page
     
     if (page_type == "video_instruction") {
+      # Toggle observer to make sure button is always enabled text pages
+      observe({
+        shinyjs::toggleState("next_page", condition = TRUE)
+      })
+      
       return(
         shiny::withTags(
           div(
@@ -1327,6 +1352,11 @@ server <- function(input, output, session) {
     } # End question page
     
     if (page_type == "section_3") {
+      # Toggle observer to make sure button is always enabled text pages
+      observe({
+        shinyjs::toggleState("next_page", condition = TRUE)
+      })
+      
       return(
         shiny::withTags(
           div(
@@ -1338,6 +1368,11 @@ server <- function(input, output, session) {
     } # End of section 3 landing page
     
     if (page_type == "section_4") {
+      # Toggle observer to make sure button is always enabled text pages
+      observe({
+        shinyjs::toggleState("next_page", condition = TRUE)
+      })
+      
       return(
         shiny::withTags(
           div(
