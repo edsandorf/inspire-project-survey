@@ -1143,10 +1143,31 @@ server <- function(input, output, session) {
       return(
         shiny::withTags(
           div(
-            h3("Here we show a video to explain the choice accasions and how to indicate your choice."),
-            h3("The video will take less than one minute. Please watch the video carefully."),
-            video(id = "sample-video", type = "video/mkv", src = "sample-video.mkv", controls = "controls",
-              width = 900, height = 450)
+            h3("To show you how to answer the choice tasks, we have made a short instructional video. Please watch the video carefully."),
+            if (treatment %in% c(1, 2, 3)) {
+              video(id = "sample-video", type = "video/mp4", src = "treatment-01-03.mp4", controls = "controls",
+                    width = 900, height = 450)
+            },
+            if (treatment %in% c(4)) {
+              video(id = "sample-video", type = "video/mp4", src = "treatment-04.mp4", controls = "controls",
+                    width = 900, height = 450)
+            },
+            if (treatment %in% c(5)) {
+              video(id = "sample-video", type = "video/mp4", src = "treatment-05.mp4", controls = "controls",
+                    width = 900, height = 450)
+            },
+            if (treatment %in% c(6)) {
+              video(id = "sample-video", type = "video/mp4", src = "treatment-06.mp4", controls = "controls",
+                    width = 900, height = 450)
+            },
+            if (treatment %in% c(7)) {
+              video(id = "sample-video", type = "video/mp4", src = "treatment-07.mp4", controls = "controls",
+                    width = 900, height = 450)
+            },
+            if (treatment %in% c(8, 9, 10)) {
+              video(id = "sample-video", type = "video/mp4", src = "treatment-08-10.mp4", controls = "controls",
+                    width = 900, height = 450)
+            }
           )
         )
       )
