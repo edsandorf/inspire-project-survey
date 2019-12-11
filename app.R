@@ -96,8 +96,10 @@ ui <- fluidPage(theme = "master.css",
       
       fluidRow(class = "funder-panel",
         column(12,
-          uiOutput("resp_id"),
-          uiOutput("url_vars")))
+          uiOutput("resp_id")#,
+          # uiOutput("url_vars")
+        )
+      )
     )
   )
 )
@@ -250,6 +252,7 @@ server <- function(input, output, session) {
   #-----------------------------------------------------------------------------
   # Define the choice tasks - choice_data
   #-----------------------------------------------------------------------------
+  # set.seed(1)
   profiles <- sample(seq_len(nrow(design)), (tasks * (nalts - 1)), prob = weights)
   choice_tasks <- design %>%
     slice(profiles)
@@ -1357,7 +1360,6 @@ server <- function(input, output, session) {
   shinyjs::show("survey")
   
 } # End server
-
 
 #-------------------------------------------------------------------------------
 #
