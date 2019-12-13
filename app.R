@@ -447,7 +447,6 @@ server <- function(input, output, session) {
         )
       
       # Send the data to the database
-      # write.csv(survey_output, "test.csv")
       save_db(db_pool, survey_output, "focus_groups", db_config, TRUE)
     }
   )
@@ -995,8 +994,8 @@ server <- function(input, output, session) {
             h1("Welcome"),
             p("Thank you for your interest in our study, which explores how people make decisions."),
             p("On the next page, you will receive more information about the project and the survey. Please read the information carefully before proceeding. At the bottom of the information page, you will be able to download a .pdf copy of the information to keep for your records."),
-            p("NOTE: If you are answering the survey on a mobile phone, please use landscape mode to ensure that all aspects of the survey are visible to you."),
-            p(paste0("For testing purposes only! You are in treatment: ", treatment))
+            p("NOTE: If you are answering the survey on a mobile phone, please use landscape mode to ensure that all aspects of the survey are visible to you.")#,
+            # p(paste0("For testing purposes only! You are in treatment: ", treatment))
           )
         )
       )
@@ -1392,7 +1391,7 @@ server <- function(input, output, session) {
           div(
             p("Thank you very much for participating."),
             p("To claim your reward for participating, please click the button below to be redirected."),
-            p(paste0("For testing purposes only! You are in treatment: ", treatment)),
+            # p(paste0("For testing purposes only! You are in treatment: ", treatment)),
             a(h4("Exit the survey", class = "btn btn-default action-button" , 
                  style = "fontweight:600"),
               href = exit_url)
