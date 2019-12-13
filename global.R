@@ -35,20 +35,27 @@ production <- TRUE
 # Define a function to save results to the database
 #-------------------------------------------------------------------------------
 save_db <- function (db_pool, x, db_name, db_config, replace_val) {
+  # Interpolate the elements of x
+  x <- do.call(c, lapply(x, function(y) {
+    sql <- "?value"
+    sqlInterpolate(db_pool, sql, value = y)
+  }))
+  
   # Construct the DB query to be sent to the database
   if (!replace_val) {
     query <- sprintf(
-      "INSERT INTO %s (%s) VALUES ('%s')",
+      "INSERT INTO %s (%s) VALUES (%s)",
       db_name,
       paste(names(x), collapse = ", "),
-      paste(x, collapse = "', '")
+      paste(x, collapse = ", ")
     )
+    
   } else {
     query <- sprintf(
       "UPDATE %s SET %s WHERE %s;",
       db_name,
-      paste(paste0(names(x)[-1], " = \'", x[-1], "\'"), collapse = ", "),
-      paste0(names(x)[1], " = \'", x[1], "\'")
+      paste(paste0(names(x)[-1], " = ", x[-1]), collapse = ", "),
+      paste0(names(x)[1], " = ", x[1])
     )
   }
   
