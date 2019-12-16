@@ -428,7 +428,7 @@ server <- function(input, output, session) {
       time_data[, "time_end"] <<- format(Sys.time(), "%Y-%m-%d %H:%M:%OS6")
 
       # Turn data vectors into JSON
-      panel_id_db <- jsonlite::toJSON(panel_id())
+      # panel_id_db <- jsonlite::toJSON(panel_id())
       choice_data <- jsonlite::toJSON(choice_data)
       search_data <- jsonlite::toJSON(search_data)
       consideration_data <- jsonlite::toJSON(consideration_data)
@@ -437,12 +437,12 @@ server <- function(input, output, session) {
       question_data <- jsonlite::toJSON(question_data)
       
       survey_output <- c(
-        resp_id_db, panel_id_db, choice_data, search_data, consideration_data,
+        resp_id_db, choice_data, search_data, consideration_data,
         time_delay_data, time_data, question_data
         )
       
       names(survey_output) <- c(
-        "resp_id", "panel_id", "choice_data", "search_data",
+        "resp_id", "choice_data", "search_data",
         "consideration_data", "time_delay_data", "time_data", "question_data"
         )
       
