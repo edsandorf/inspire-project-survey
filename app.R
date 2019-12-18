@@ -1168,8 +1168,16 @@ server <- function(input, output, session) {
         shiny::withTags(
           div(
             h3("To show you how to answer the choice tasks, we have made a short instructional video. Please watch the video carefully."),
-            if (treatment %in% c(1, 2, 3)) {
-              video(id = "sample-video", type = "video/mp4", src = "treatment-01-03.mp4", controls = "controls",
+            if (treatment %in% c(1)) {
+              video(id = "sample-video", type = "video/mp4", src = "treatment-01.mp4", controls = "controls",
+                    width = 900, height = 450)
+            },
+            if (treatment %in% c(2)) {
+              video(id = "sample-video", type = "video/mp4", src = "treatment-02.mp4", controls = "controls",
+                    width = 900, height = 450)
+            },
+            if (treatment %in% c(3)) {
+              video(id = "sample-video", type = "video/mp4", src = "treatment-03.mp4", controls = "controls",
                     width = 900, height = 450)
             },
             if (treatment %in% c(4)) {
