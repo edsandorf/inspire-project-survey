@@ -1402,7 +1402,7 @@ server <- function(input, output, session) {
             # p(paste0("For testing purposes only! You are in treatment: ", treatment)),
             a(h4("Exit the survey", class = "btn btn-default action-button" , 
                  style = "fontweight:600"),
-              href = exit_url)
+              href = exit_url, target = "_top")
           )
         )
       )
