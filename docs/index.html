@@ -6,8 +6,23 @@
         width: 100%;
       }
     </style>
+    
+    <script>
+      function get_url_param(param) {
+        var page_url = window.location.search.substring(1);
+        var url_vars = page_url.split('&');
+        for (var i = 0; i < url_vars.length; i++) { 
+          var param_name = url_vars[i].split('=');
+          if (param_name[0] == param) {
+            return param_name[1];
+          }
+        }
+      }
+    </script>
   </head>
   <body>
     <iframe id = "survey" src = "https://inspire-project.shinyapps.io/inspire-project-survey/" frameborder = "0"></iframe>
+    
+    get_url_param("id");
   </body>
 </html>
