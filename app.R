@@ -447,7 +447,7 @@ server <- function(input, output, session) {
         )
       
       # Send the data to the database
-      save_db(db_pool, survey_output, "focus_groups", db_config, TRUE)
+      save_db(db_pool, survey_output, "pilot_survey", db_config, TRUE)
     }
   )
   
@@ -622,8 +622,8 @@ server <- function(input, output, session) {
         query <- parseQueryString(isolate(session$clientData$url_search))
         
         # Survey identification
-        if (!is.null(query[["id"]])) {
-          panel_id(query[["id"]])
+        if (!is.null(query[["RID"]])) {
+          panel_id(query[["RID"]])
         } 
         
       })
@@ -651,7 +651,7 @@ server <- function(input, output, session) {
     )
     
     # Send the data to the database
-    save_db(db_pool, survey_output, "focus_groups", db_config, replace_val)
+    save_db(db_pool, survey_output, "pilot_survey", db_config, replace_val)
     
   })
   
@@ -1392,7 +1392,7 @@ server <- function(input, output, session) {
     if (page_type == "final_page") {
       # Hide the 'next_page' button
       shinyjs::hideElement("next_page")
-      exit_url <- paste0("https://inspire-project.info/?id=", panel_id(), "&treatment=", treatment)
+      exit_url <- paste0("https://savantahub.com/cb?token=320216db-34f8-4c0b-ba59-0115eba3fee3&RID=", panel_id())
       
       return(
         shiny::withTags(
