@@ -447,7 +447,7 @@ server <- function(input, output, session) {
         )
       
       # Send the data to the database
-      save_db(db_pool, survey_output, "pilot_survey", db_config, TRUE)
+      save_db(db_pool, survey_output, "main_survey", db_config, TRUE)
     }
   )
   
@@ -651,7 +651,7 @@ server <- function(input, output, session) {
     )
     
     # Send the data to the database
-    save_db(db_pool, survey_output, "pilot_survey", db_config, replace_val)
+    save_db(db_pool, survey_output, "main_survey", db_config, replace_val)
     
   })
   
@@ -1167,7 +1167,9 @@ server <- function(input, output, session) {
       return(
         shiny::withTags(
           div(
-            h3("To show you how to answer the choice tasks, we have made a short instructional video. Please watch the video carefully."),
+            h3("To show you how to answer the choice tasks, we have made a short instructional video."),
+            h3("The video takes a few seconds to load, and in some browsers you may have to click the video to begin loading."),
+            h3(b("It is important that you watch the video carefully.")),
             if (treatment %in% c(1)) {
               video(id = "sample-video", type = "video/mp4", src = "treatment-01.mp4", controls = "controls",
                     width = 900, height = 450)
