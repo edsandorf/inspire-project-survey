@@ -16,16 +16,16 @@ source("global.R")
 #
 #
 #-------------------------------------------------------------------------------
-db_pool <- pool::dbPool(
-  drv = RMariaDB::MariaDB(),
-  dbname = db_config$dbname,
-  host = db_config$host,
-  username = db_config$username,
-  password = db_config$password,
-  ssl.key = db_config$ssl.key,
-  ssl.cert = db_config$ssl.cert,
-  ssl.ca = db_config$ssl.ca
-)
+# db_pool <- pool::dbPool(
+#   drv = RMariaDB::MariaDB(),
+#   dbname = db_config$dbname,
+#   host = db_config$host,
+#   username = db_config$username,
+#   password = db_config$password,
+#   ssl.key = db_config$ssl.key,
+#   ssl.cert = db_config$ssl.cert,
+#   ssl.ca = db_config$ssl.ca
+# )
 
 #-------------------------------------------------------------------------------
 #
@@ -70,6 +70,7 @@ ui <- fluidPage(theme = "master.css",
       fluidRow(class = "panel-main",
         column(1),
         column(10,
+               h3("This is a demo version of the survey and no responses are required nor recorded!"),
           uiOutput("user_interface"),
           # Button to reveal the next alternative
           shinyWidgets::actionBttn(inputId = "next_alt",
@@ -291,7 +292,8 @@ server <- function(input, output, session) {
     id = resp_id,
     ct = seq_len(tasks),
     alts_revealed = NA
-  )
+  ) %>% 
+    mutate(alts_revealed = as.double(alts_revealed))
   
   #-----------------------------------------------------------------------------
   # Define the consideration sets - consideration_data
@@ -405,7 +407,7 @@ server <- function(input, output, session) {
     alt = 1, 
     question = 0,
     time = 1000,
-    task = 0
+    task = 1
   )
   
   checked <- reactiveValues()
@@ -447,7 +449,7 @@ server <- function(input, output, session) {
         )
       
       # Send the data to the database
-      save_db(db_pool, survey_output, "main_survey", db_config, TRUE)
+      # save_db(db_pool, survey_output, "main_survey", db_config, TRUE)
     }
   )
   
@@ -651,7 +653,7 @@ server <- function(input, output, session) {
     )
     
     # Send the data to the database
-    save_db(db_pool, survey_output, "main_survey", db_config, replace_val)
+    # save_db(db_pool, survey_output, "main_survey", db_config, replace_val)
     
   })
   
@@ -1394,7 +1396,8 @@ server <- function(input, output, session) {
     if (page_type == "final_page") {
       # Hide the 'next_page' button
       shinyjs::hideElement("next_page")
-      exit_url <- paste0("https://savantahub.com/cb?token=320216db-34f8-4c0b-ba59-0115eba3fee3&RID=", panel_id())
+      # exit_url <- paste0("https://savantahub.com/cb?token=320216db-34f8-4c0b-ba59-0115eba3fee3&RID=", panel_id())
+      exit_url <- "https://inspire-project.info"
       
       return(
         shiny::withTags(

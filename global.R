@@ -29,7 +29,7 @@ time_inc <- 250
 #-------------------------------------------------------------------------------
 # If TRUE removes printing the answers and enables next page checks
 #-------------------------------------------------------------------------------
-production <- TRUE
+production <- FALSE
 
 #-------------------------------------------------------------------------------
 # Define a function to save results to the database
