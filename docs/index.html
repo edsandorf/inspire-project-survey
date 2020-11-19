@@ -4,23 +4,25 @@
       #survey {
         border: none;
         width: 100%;
-        height: 100%;
       }
     </style>
-  </head>
-  <body>
-    <script type = "text/javascript">
-      window.onload = initialize;
-
-      function initialize() {
-        const url_parameters = new URLSearchParams(window.location.search);
-        const panel_id = url_parameters.get("RID");
-        var new_url = "https://inspire-project.shinyapps.io/inspire-project-survey/?RID=" + panel_id;
-        document.getElementById("survey").src = new_url;
+    
+    <script>
+      function get_url_param(param) {
+        var page_url = window.location.search.substring(1);
+        var url_vars = page_url.split('&');
+        for (var i = 0; i < url_vars.length; i++) { 
+          var param_name = url_vars[i].split('=');
+          if (param_name[0] == param) {
+            return param_name[1];
+          }
+        }
       }
     </script>
-
-    <iframe id = "survey" src = "about:blank" frameborder = "0"></iframe>
-
+  </head>
+  <body>
+    <iframe id = "survey" src = "https://edsandorf.shinyapps.io/inspire-project-survey/" frameborder = "0"></iframe>
+    
+    get_url_param("id");
   </body>
 </html>
